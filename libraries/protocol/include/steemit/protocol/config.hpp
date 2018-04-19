@@ -7,17 +7,17 @@
 #define STEEMIT_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( STEEMIT_BLOCKCHAIN_VERSION ) )
 
 #ifdef IS_TEST_NET
-#define STEEMIT_INIT_PRIVATE_KEY                (fc::ecc::private_key::regenerate(fc::sha256::hash(std::string("init_key"))))
+#define STEEMIT_INIT_PRIVATE_KEY                (fc::ecc::private_key::regenerate(fc::sha256::hash(std::string("init_vit"))))
 #define STEEMIT_INIT_PUBLIC_KEY_STR             (std::string( steemit::protocol::public_key_type(STEEMIT_INIT_PRIVATE_KEY.get_public_key()) ))
-#define STEEMIT_CHAIN_ID                        (fc::sha256::hash("testnet"))
+#define STEEMIT_CHAIN_ID                        (fc::sha256::hash("testvit"))
 
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< STEEM with 3 digits of precision
 #define SBD_SYMBOL    (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24) ) ///< Test Backed Dollars with 3 digits of precision
-#define STMD_SYMBOL   (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('S') << 16) | (uint64_t('T') << 24) | (uint64_t('D') << 32) ) ///< Test Dollars with 3 digits of precision
+#define STMD_SYMBOL   (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('V') << 16) | (uint64_t('T') << 24) | (uint64_t('D') << 32) ) ///< Test Dollars with 3 digits of precision
 
 #define STEEMIT_SYMBOL                          "TEST"
-#define STEEMIT_ADDRESS_PREFIX                  "TST"
+#define STEEMIT_ADDRESS_PREFIX                  "TVT"
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1451606400))
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(1451606400))
@@ -38,6 +38,7 @@
 #define STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::seconds(12)
 #define STEEMIT_OWNER_UPDATE_LIMIT                          fc::seconds(0)
 #define STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
+#define STEEMIT_HARDFORK_REQUIRED_WITNESSES     1
 #else // IS LIVE STEEM NETWORK
 
 #define STEEMIT_INIT_PUBLIC_KEY_STR             "STM8GC13uCZbP44HzMLV6zPZGwVQ8Nt4Kji8PapsPiNq1BK153XTX"
@@ -67,6 +68,7 @@
 #define STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
 #define STEEMIT_OWNER_UPDATE_LIMIT                          fc::minutes(60)
 #define STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 3186477
+#define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 
 #endif
 
@@ -90,7 +92,6 @@
 #define STEEMIT_MAX_MINER_WITNESSES_HF17        0
 #define STEEMIT_MAX_RUNNER_WITNESSES_HF17       1
 
-#define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 #define STEEMIT_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define STEEMIT_MAX_MEMO_SIZE                   2048
 #define STEEMIT_MAX_PROXY_RECURSION_DEPTH       4
