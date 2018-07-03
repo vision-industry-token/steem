@@ -2,7 +2,13 @@
 
 VERSION=`cat /etc/steemdversion`
 
-STEEMD="/usr/local/steemd-full/bin/steemd"
+if [[ "$IS_BROADCAST_NODE" ]]; then
+  STEEMD="/usr/local/steemd-default/bin/steemd"
+elif [[ "$IS_AH_NODE" ]]; then
+  STEEMD="/usr/local/steemd-default/bin/steemd"
+else
+  STEEMD="/usr/local/steemd-full/bin/steemd"
+fi
 
 chown -R steemd:steemd $HOME
 
@@ -34,12 +40,19 @@ fi
 NOW=`date +%s`
 STEEMD_FEED_START_TIME=`expr $NOW - 1209600`
 
-ARGS+=" --follow-start-feeds=$STEEMD_FEED_START_TIME"
-
-ARGS+=" --disable-get-block"
+if [[ ! "$IS_BROADCAST_NODE" ]]; then
+  ARGS+=" --follow-start-feeds=$STEEMD_FEED_START_TIME"
+  ARGS+=" --disable-get-block"
+fi
 
 # overwrite local config with image one
-cp /etc/steemd/fullnode.config.ini $HOME/config.ini
+if [[ "$IS_BROADCAST_NODE" ]]; then
+  cp /etc/steemd/config-for-broadcaster.ini $HOME/config.ini
+elif [[ "$IS_AH_NODE" ]]; then
+  cp /etc/steemd/config-for-ahnode.ini $HOME/config.ini
+else
+  cp /etc/steemd/fullnode.config.ini $HOME/config.ini
+fi
 
 chown steemd:steemd $HOME/config.ini
 
@@ -49,17 +62,55 @@ mv /etc/nginx/nginx.conf /etc/nginx/nginx.original.conf
 cp /etc/nginx/steemd.nginx.conf /etc/nginx/nginx.conf
 
 # get blockchain state from an S3 bucket
-echo steemd: beginning download and decompress of s3://$S3_BUCKET/blockchain-$VERSION-latest.tar.bz2
+echo steemd: beginning download and decompress of s3://$S3_BUCKET/blockchain-$VERSION-latest.tar.lz4
 if [[ "$USE_RAMDISK" ]]; then
   mkdir -p /mnt/ramdisk
   mount -t ramfs -o size=${RAMDISK_SIZE_IN_MB:-51200}m ramfs /mnt/ramdisk
   ARGS+=" --shared-file-dir=/mnt/ramdisk/blockchain"
-  s3cmd get s3://$S3_BUCKET/blockchain-$VERSION-latest.tar.bz2 - | pbzip2 -m2000dc | tar x --wildcards 'blockchain/block*' -C /mnt/ramdisk 'blockchain/shared*'
+  # try five times to pull in shared memory file
+  finished=0
+  count=1
+  while [[ $count -le 5 ]] && [[ $finished == 0 ]]
+  do
+    rm -rf $HOME/blockchain/*
+    rm -rf /mnt/ramdisk/blockchain/*
+    if [[ "$IS_BROADCAST_NODE" ]]; then
+      aws s3 cp s3://$S3_BUCKET/broadcast-$VERSION-latest.tar.lz4 - | lz4 -d | tar x --wildcards 'blockchain/block*' -C /mnt/ramdisk 'blockchain/shared*'
+    elif [[ "$IS_AH_NODE" ]]; then
+      aws s3 cp s3://$S3_BUCKET/ahnode-$VERSION-latest.tar.lz4 - | lz4 -d | tar x --wildcards 'blockchain/block*' -C /mnt/ramdisk 'blockchain/shared*'
+    else
+      aws s3 cp s3://$S3_BUCKET/blockchain-$VERSION-latest.tar.lz4 - | lz4 -d | tar x --wildcards 'blockchain/block*' -C /mnt/ramdisk 'blockchain/shared*'
+    fi
+    if [[ $? -ne 0 ]]; then
+      sleep 1
+      echo notifyalert steemd: unable to pull blockchain state from S3 - attempt $count
+      (( count++ ))
+    else
+      finished=1
+    fi
+  done
   chown -R steemd:steemd /mnt/ramdisk/blockchain
 else
-  s3cmd get s3://$S3_BUCKET/blockchain-$VERSION-latest.tar.bz2 - | pbzip2 -m2000dc | tar x
+  while [[ $count -le 5 ]] && [[ $finished == 0 ]]
+  do
+    rm -rf $HOME/blockchain/*
+    if [[ "$IS_BROADCAST_NODE" ]]; then
+      aws s3 cp s3://$S3_BUCKET/broadcast-$VERSION-latest.tar.lz4 - | lz4 -d | tar x
+    elif [[ "$IS_AH_NODE" ]]; then
+      aws s3 cp s3://$S3_BUCKET/ahnode-$VERSION-latest.tar.lz4 - | lz4 -d | tar x
+    else
+      aws s3 cp s3://$S3_BUCKET/blockchain-$VERSION-latest.tar.lz4 - | lz4 -d | tar x
+    fi
+    if [[ $? -ne 0 ]]; then
+      sleep 1
+      echo notifyalert steemd: unable to pull blockchain state from S3 - attempt $count
+      (( count++ ))
+    else
+      finished=1
+    fi
+  done
 fi
-if [[ $? -ne 0 ]]; then
+if [[ $finished == 0 ]]; then
   if [[ ! "$SYNC_TO_S3" ]]; then
     echo notifyalert steemd: unable to pull blockchain state from S3 - exiting
     exit 1
@@ -85,79 +136,29 @@ fi
 
 chown -R steemd:steemd $HOME/*
 
-# start multiple read-only instances based on the number of cores
-# attach to the local interface since a proxy will be used to loadbalance
-if [[ "$USE_MULTICORE_READONLY" ]]; then
-    exec chpst -usteemd \
-        $STEEMD \
-            --rpc-endpoint=127.0.0.1:8091 \
-            --p2p-endpoint=0.0.0.0:2001 \
-            --data-dir=$HOME \
-            $ARGS \
-            $STEEMD_EXTRA_OPTS \
-            2>&1 &
-    # sleep for a moment to allow the writer node to be ready to accept connections from the readers
-    sleep 30
-    PORT_NUM=8092
-    cp /etc/nginx/healthcheck.conf.template /etc/nginx/healthcheck.conf
-    CORES=$(nproc)
-    PROCESSES=$((CORES * 4))
-    for (( i=2; i<=$PROCESSES; i++ ))
-      do
-        echo server 127.0.0.1:$PORT_NUM\; >> /etc/nginx/healthcheck.conf
-        ((PORT_NUM++))
-    done
-    echo } >> /etc/nginx/healthcheck.conf
-    PORT_NUM=8092
-    for (( i=2; i<=$PROCESSES; i++ ))
-      do
-        exec chpst -usteemd \
-        $STEEMD \
-          --rpc-endpoint=127.0.0.1:$PORT_NUM \
-          --data-dir=$HOME \
-          $ARGS \
-          --read-forward-rpc=127.0.0.1:8091 \
-          --read-only \
-          2>&1 &
-          ((PORT_NUM++))
-          sleep 1
-    done
-    # start nginx now that the config file is complete with all endpoints
-    # all of the read-only processes will connect to the write node onport 8091
-    # nginx will balance all incoming traffic on port 8090
-    rm /etc/nginx/sites-enabled/default
-    cp /etc/nginx/healthcheck.conf /etc/nginx/sites-enabled/default
-    /etc/init.d/fcgiwrap restart
-    service nginx restart
-    # start runsv script that kills containers if they die
-    mkdir -p /etc/service/steemd
-    cp /usr/local/bin/paas-sv-run.sh /etc/service/steemd/run
-    chmod +x /etc/service/steemd/run
-    runsv /etc/service/steemd
+# let's get going
+cp /etc/nginx/healthcheck.conf.template /etc/nginx/healthcheck.conf
+echo server 127.0.0.1:8091\; >> /etc/nginx/healthcheck.conf
+echo } >> /etc/nginx/healthcheck.conf
+rm /etc/nginx/sites-enabled/default
+cp /etc/nginx/healthcheck.conf /etc/nginx/sites-enabled/default
+/etc/init.d/fcgiwrap restart
+service nginx restart
+exec chpst -usteemd \
+    $STEEMD \
+        --rpc-endpoint=0.0.0.0:8091 \
+        --p2p-endpoint=0.0.0.0:2001 \
+        --data-dir=$HOME \
+        $ARGS \
+        $STEEMD_EXTRA_OPTS \
+        2>&1&
+SAVED_PID=`pgrep -f p2p-endpoint`
+echo $SAVED_PID >> /tmp/steemdpid
+mkdir -p /etc/service/steemd
+if [[ ! "$SYNC_TO_S3" ]]; then
+  cp /usr/local/bin/paas-sv-run.sh /etc/service/steemd/run
 else
-    cp /etc/nginx/healthcheck.conf.template /etc/nginx/healthcheck.conf
-    echo server 127.0.0.1:8091\; >> /etc/nginx/healthcheck.conf
-    echo } >> /etc/nginx/healthcheck.conf
-    rm /etc/nginx/sites-enabled/default
-    cp /etc/nginx/healthcheck.conf /etc/nginx/sites-enabled/default
-    /etc/init.d/fcgiwrap restart
-    service nginx restart
-    exec chpst -usteemd \
-        $STEEMD \
-            --rpc-endpoint=0.0.0.0:8091 \
-            --p2p-endpoint=0.0.0.0:2001 \
-            --data-dir=$HOME \
-            $ARGS \
-            $STEEMD_EXTRA_OPTS \
-            2>&1&
-    SAVED_PID=`pgrep -f p2p-endpoint`
-    echo $SAVED_PID >> /tmp/steemdpid
-    mkdir -p /etc/service/steemd
-    if [[ ! "$SYNC_TO_S3" ]]; then
-      cp /usr/local/bin/paas-sv-run.sh /etc/service/steemd/run
-    else
-      cp /usr/local/bin/sync-sv-run.sh /etc/service/steemd/run
-    fi
-    chmod +x /etc/service/steemd/run
-    runsv /etc/service/steemd
+  cp /usr/local/bin/sync-sv-run.sh /etc/service/steemd/run
 fi
+chmod +x /etc/service/steemd/run
+runsv /etc/service/steemd

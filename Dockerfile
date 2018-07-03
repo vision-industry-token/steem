@@ -22,8 +22,8 @@ RUN \
         libreadline-dev \
         libssl-dev \
         libtool \
+        liblz4-tool \
         ncurses-dev \
-        pbzip2 \
         pkg-config \
         python3 \
         python3-dev \
@@ -31,7 +31,6 @@ RUN \
         python3-pip \
         nginx \
         fcgiwrap \
-        s3cmd \
         awscli \
         jq \
         wget \
@@ -199,6 +198,8 @@ ADD doc/seednodes.txt /etc/steemd/seednodes.txt
 # the following adds lots of logging info to stdout
 ADD contrib/config-for-docker.ini /etc/steemd/config.ini
 ADD contrib/fullnode.config.ini /etc/steemd/fullnode.config.ini
+ADD contrib/config-for-broadcaster.ini /etc/steemd/config-for-broadcaster.ini
+ADD contrib/config-for-ahnode.ini /etc/steemd/config-for-ahnode.ini
 
 # add normal startup script that starts via sv
 ADD contrib/steemd.run /usr/local/bin/steem-sv-run.sh
