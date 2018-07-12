@@ -1209,7 +1209,10 @@ void vote_evaluator::do_apply( const vote_operation& o )
 
    if( _db.has_hardfork( STEEMIT_HARDFORK_0_14__259 ) )
    {
-      FC_ASSERT( abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || o.weight == 0, "Voting weight is too small, please accumulate more voting power or steem power." );
+      FC_ASSERT( abs_rshares > STEEMIT_VOTE_DUST_THRESHOLD || o.weight == 0,
+        "Voting weight is too small (${f}), please accumulate more voting power or steem power.",
+        ("f", abs_rshares)
+      );
    }
    else if( _db.has_hardfork( STEEMIT_HARDFORK_0_13__248 ) )
    {
