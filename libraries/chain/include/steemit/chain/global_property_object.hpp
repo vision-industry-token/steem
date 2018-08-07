@@ -71,6 +71,10 @@ namespace steemit { namespace chain {
 
          price get_reward_vesting_share_price() const
          {
+            if ( pending_rewarded_vesting_shares.amount == 0 || pending_rewarded_vesting_steem.amount == 0) {
+               return get_vesting_share_price();
+            }
+
             return price( total_vesting_shares + pending_rewarded_vesting_shares,
                total_vesting_fund_steem + pending_rewarded_vesting_steem );
          }

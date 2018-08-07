@@ -2454,7 +2454,6 @@ void database::init_genesis( uint64_t init_supply )
       {
          wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
       } );
-      set_hardfork(17, true);
    }
    FC_CAPTURE_AND_RETHROW()
 }
