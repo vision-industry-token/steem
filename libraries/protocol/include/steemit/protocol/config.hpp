@@ -39,6 +39,9 @@
 #define STEEMIT_OWNER_UPDATE_LIMIT                          fc::seconds(0)
 #define STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     1
+
+#define STEEMIT_INIT_MINER_NAME                 "initminer"
+
 #else // IS LIVE STEEM NETWORK
 
 #define STEEMIT_INIT_PUBLIC_KEY_STR             "VIT6mEDy9EschxGjS1LJhb7zQrbmoWqrkg1n9fGiNfParFmC2mA9a"
@@ -71,6 +74,8 @@
 #define STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 3186477
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
 
+#define STEEMIT_INIT_MINER_NAME                 "vicewitness"
+
 #endif
 
 #define STEEMIT_BLOCK_INTERVAL                  3
@@ -79,7 +84,6 @@
 #define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 7)
 #define STEEMIT_START_MINER_VOTING_BLOCK        (STEEMIT_BLOCKS_PER_DAY * 30)
 
-#define STEEMIT_INIT_MINER_NAME                 "vicewitness"
 #define STEEMIT_NUM_INIT_MINERS                 1
 #define STEEMIT_INIT_TIME                       (fc::time_point_sec());
 
