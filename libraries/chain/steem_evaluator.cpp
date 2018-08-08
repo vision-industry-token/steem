@@ -1102,8 +1102,6 @@ void vote_evaluator::do_apply( const vote_operation& o )
       /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
       fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
       const auto& root = _db.get( comment.root_comment );
-      auto old_root_abs_rshares = root.children_abs_rshares.value;
-
       fc::uint128_t avg_cashout_sec;
 
       FC_ASSERT( abs_rshares > 0, "Cannot vote with 0 rshares." );
@@ -1175,7 +1173,6 @@ void vote_evaluator::do_apply( const vote_operation& o )
                total2 *= total2;
                cv.weight = static_cast<uint64_t>( rshares3 / total2 );
             } else {// cv.weight = W(R_1) - W(R_0)
-               const uint128_t two_s = 2 * util::get_content_constant_s();
                const auto& reward_fund = _db.get_reward_fund( comment );
                auto curve = reward_fund.curation_reward_curve;
                uint64_t old_weight = util::evaluate_reward_curve( old_vote_rshares.value, curve, reward_fund.content_constant ).to_uint64();
@@ -1231,8 +1228,6 @@ void vote_evaluator::do_apply( const vote_operation& o )
       /// if the current net_rshares is less than 0, the post is getting 0 rewards so it is not factored into total rshares^2
       fc::uint128_t old_rshares = std::max(comment.net_rshares.value, int64_t(0));
       const auto& root = _db.get( comment.root_comment );
-      auto old_root_abs_rshares = root.children_abs_rshares.value;
-
       fc::uint128_t avg_cashout_sec;
 
       _db.modify( comment, [&]( comment_object& c )

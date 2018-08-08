@@ -531,8 +531,8 @@ BOOST_AUTO_TEST_CASE( comment_apply )
 
       BOOST_TEST_MESSAGE( "--- Test modifying a comment" );
       const auto& mod_sam_comment = db.get_comment( "sam", string( "dolor" ) );
-      const auto& mod_bob_comment = db.get_comment( "bob", string( "ipsum" ) );
-      const auto& mod_alice_comment = db.get_comment( "alice", string( "lorem" ) );
+//      const auto& mod_bob_comment = db.get_comment( "bob", string( "ipsum" ) );
+//      const auto& mod_alice_comment = db.get_comment( "alice", string( "lorem" ) );
       fc::time_point_sec created = mod_sam_comment.created;
 
       db.modify( mod_sam_comment, [&]( comment_object& com )

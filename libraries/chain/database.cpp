@@ -1620,7 +1620,6 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
 void database::process_comment_cashout()
 {
-   const auto& gpo = get_dynamic_global_properties();
    util::comment_reward_context ctx;
    ctx.current_steem_price = get_feed_history().current_median_history;
 
@@ -1650,8 +1649,6 @@ void database::process_comment_cashout()
    }
 
    const auto& cidx        = get_index< comment_index >().indices().get< by_cashout_time >();
-   const auto& com_by_root = get_index< comment_index >().indices().get< by_root >();
-
    auto current = cidx.begin();
    //  add all rshares about to be cashed out to the reward funds. This ensures equal satoshi per rshare payment
    while( current != cidx.end() && current->cashout_time <= head_block_time() )
@@ -3164,11 +3161,7 @@ int database::match( const limit_order_object& new_order, const limit_order_obje
    old_order_pays = new_order_receives;
    new_order_pays = old_order_receives;
 
-   assert( new_order_pays == new_order.amount_for_sale() ||
-           old_order_pays == old_order.amount_for_sale() );
-
-   auto age = head_block_time() - old_order.created;
-
+   assert( new_order_pays == new_order.amount_for_sale() || old_order_pays == old_order.amount_for_sale() );
    push_virtual_operation( fill_order_operation( new_order.seller, new_order.orderid, new_order_pays, old_order.seller, old_order.orderid, old_order_pays ) );
 
    int result = 0;
