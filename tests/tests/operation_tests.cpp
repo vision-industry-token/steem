@@ -5961,7 +5961,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
       withdraw.vesting_shares = db.get_account( "alice" ).vesting_shares;
       account_create_with_delegation_operation op;
       op.fee = ASSET( "10.000 TESTS" );
-      op.delegation = ASSET( "100000000.000000 VESTS" );
+      op.delegation = ASSET( "100.000000 VESTS" );
       op.creator = "alice";
       op.new_account_name = "bob";
       op.owner = authority( 1, priv_key.get_public_key(), 1 );
@@ -5983,8 +5983,8 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
 
       const account_object& bob_acc = db.get_account( "bob" );
       const account_object& alice_acc = db.get_account( "alice" );
-      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "100000000.000000 VESTS" ) );
-      BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "100000000.000000 VESTS" ) );
+      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "100.000000 VESTS" ) );
+      BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "100.000000 VESTS" ) );
       BOOST_REQUIRE( bob_acc.effective_vesting_shares() == bob_acc.vesting_shares - bob_acc.delegated_vesting_shares + bob_acc.received_vesting_shares);
 
       BOOST_TEST_MESSAGE( "--- Test delegator object integrety. " );
@@ -5993,7 +5993,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
       BOOST_REQUIRE( delegation != nullptr);
       BOOST_REQUIRE( delegation->delegator == op.creator);
       BOOST_REQUIRE( delegation->delegatee == op.new_account_name );
-      BOOST_REQUIRE( delegation->vesting_shares == ASSET( "100000000.000000 VESTS" ) );
+      BOOST_REQUIRE( delegation->vesting_shares == ASSET( "100.000000 VESTS" ) );
       BOOST_REQUIRE( delegation->min_delegation_time == db.head_block_time() + STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME );
       auto del_amt = delegation->vesting_shares;
       auto exp_time = delegation->min_delegation_time;

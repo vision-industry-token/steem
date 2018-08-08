@@ -2318,6 +2318,10 @@ void database::init_genesis( uint64_t init_supply )
          p.current_supply = asset( init_supply, STEEM_SYMBOL );
          p.virtual_supply = p.current_supply;
          p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
+
+         p.total_reward_fund_steem = asset( 0, STEEM_SYMBOL );
+         p.total_reward_shares2 = 0;
+         p.vote_power_reserve_rate = 10;
       } );
 
       // Nothing to do
@@ -2341,7 +2345,7 @@ void database::init_genesis( uint64_t init_supply )
       // pre-applied HFs
 
 //      case STEEMIT_HARDFORK_0_1:
-         perform_vesting_share_split( 1000000 );
+//      perform_vesting_share_split( 1000000 );
 
 //#ifdef IS_TEST_NET
 //         {
@@ -2356,104 +2360,94 @@ void database::init_genesis( uint64_t init_supply )
 //         }
 //#endif
 
-         // HF 2-8
-         retally_witness_votes();
-         retally_witness_votes();
-         reset_virtual_schedule_time(*this);
-         retally_witness_vote_counts();
-         retally_comment_children();
-         retally_witness_vote_counts(true);
-         retally_liquidity_weight();
+      // HF 2-8
+      retally_witness_votes();
+      retally_witness_votes();
+      reset_virtual_schedule_time(*this);
+      retally_witness_vote_counts();
+      retally_comment_children();
+      retally_witness_vote_counts(true);
+      retally_liquidity_weight();
 
-         modify( get< account_authority_object, by_account >( STEEMIT_MINER_ACCOUNT ), [&]( account_authority_object& auth )
-         {
-            auth.posting = authority();
-            auth.posting.weight_threshold = 1;
-         });
+      modify( get< account_authority_object, by_account >( STEEMIT_MINER_ACCOUNT ), [&]( account_authority_object& auth )
+      {
+         auth.posting = authority();
+         auth.posting.weight_threshold = 1;
+      });
 
-         modify( get< account_authority_object, by_account >( STEEMIT_NULL_ACCOUNT ), [&]( account_authority_object& auth )
-         {
-            auth.posting = authority();
-            auth.posting.weight_threshold = 1;
-         });
+      modify( get< account_authority_object, by_account >( STEEMIT_NULL_ACCOUNT ), [&]( account_authority_object& auth )
+      {
+         auth.posting = authority();
+         auth.posting.weight_threshold = 1;
+      });
 
-         modify( get< account_authority_object, by_account >( STEEMIT_TEMP_ACCOUNT ), [&]( account_authority_object& auth )
-         {
-            auth.posting = authority();
-            auth.posting.weight_threshold = 1;
-         });
+      modify( get< account_authority_object, by_account >( STEEMIT_TEMP_ACCOUNT ), [&]( account_authority_object& auth )
+      {
+         auth.posting = authority();
+         auth.posting.weight_threshold = 1;
+      });
 
-         modify( get_feed_history(), [&]( feed_history_object& fho )
-         {
-            while( fho.price_history.size() > STEEMIT_FEED_HISTORY_WINDOW )
-               fho.price_history.pop_front();
-         });
+      modify( get_feed_history(), [&]( feed_history_object& fho )
+      {
+         while( fho.price_history.size() > STEEMIT_FEED_HISTORY_WINDOW )
+            fho.price_history.pop_front();
+      });
 
 //      case STEEMIT_HARDFORK_0_17:
-         static_assert(
-            STEEMIT_MAX_VOTED_WITNESSES_HF0 + STEEMIT_MAX_MINER_WITNESSES_HF0 + STEEMIT_MAX_RUNNER_WITNESSES_HF0 == STEEMIT_MAX_WITNESSES,
-            "HF0 witness counts must add up to STEEMIT_MAX_WITNESSES" );
-         static_assert(
-            STEEMIT_MAX_VOTED_WITNESSES_HF17 + STEEMIT_MAX_MINER_WITNESSES_HF17 + STEEMIT_MAX_RUNNER_WITNESSES_HF17 == STEEMIT_MAX_WITNESSES,
-            "HF17 witness counts must add up to STEEMIT_MAX_WITNESSES" );
+      static_assert(
+         STEEMIT_MAX_VOTED_WITNESSES_HF0 + STEEMIT_MAX_MINER_WITNESSES_HF0 + STEEMIT_MAX_RUNNER_WITNESSES_HF0 == STEEMIT_MAX_WITNESSES,
+         "HF0 witness counts must add up to STEEMIT_MAX_WITNESSES" );
+      static_assert(
+         STEEMIT_MAX_VOTED_WITNESSES_HF17 + STEEMIT_MAX_MINER_WITNESSES_HF17 + STEEMIT_MAX_RUNNER_WITNESSES_HF17 == STEEMIT_MAX_WITNESSES,
+         "HF17 witness counts must add up to STEEMIT_MAX_WITNESSES" );
 
-         modify( get_witness_schedule_object(), [&]( witness_schedule_object& wso )
-         {
-            wso.max_voted_witnesses = STEEMIT_MAX_VOTED_WITNESSES_HF17;
-            wso.max_miner_witnesses = STEEMIT_MAX_MINER_WITNESSES_HF17;
-            wso.max_runner_witnesses = STEEMIT_MAX_RUNNER_WITNESSES_HF17;
-         });
+      modify( get_witness_schedule_object(), [&]( witness_schedule_object& wso )
+      {
+         wso.max_voted_witnesses = STEEMIT_MAX_VOTED_WITNESSES_HF17;
+         wso.max_miner_witnesses = STEEMIT_MAX_MINER_WITNESSES_HF17;
+         wso.max_runner_witnesses = STEEMIT_MAX_RUNNER_WITNESSES_HF17;
+      });
 
-         const auto& gpo = get_dynamic_global_properties();
+      const auto& gpo = get_dynamic_global_properties();
 
-         auto post_rf = create< reward_fund_object >( [&]( reward_fund_object& rfo )
-         {
-            rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
-            rfo.last_update = head_block_time();
-            rfo.content_constant = STEEMIT_CONTENT_CONSTANT_HF0;
-            rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
-            rfo.percent_content_rewards = STEEMIT_100_PERCENT;
-            rfo.reward_balance = gpo.total_reward_fund_steem;
-            rfo.author_reward_curve = curve_id::linear;
-            rfo.curation_reward_curve = curve_id::square_root;
+      auto post_rf = create< reward_fund_object >( [&]( reward_fund_object& rfo )
+      {
+         rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
+         rfo.last_update = head_block_time();
+         rfo.content_constant = STEEMIT_CONTENT_CONSTANT_HF0;
+         rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
+         rfo.percent_content_rewards = STEEMIT_100_PERCENT;
+         rfo.reward_balance = gpo.total_reward_fund_steem;
+         rfo.author_reward_curve = curve_id::linear;
+         rfo.curation_reward_curve = curve_id::square_root;
 #ifndef IS_TEST_NET
-            rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
+         rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
 #endif
-         });
+      });
 
-         // As a shortcut in payout processing, we use the id as an array index.
-         // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
-         FC_ASSERT( post_rf.id._id == 0 );
+      // STEEMIT_HARDFORK_0_19
+      // As a shortcut in payout processing, we use the id as an array index.
+      // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
+      FC_ASSERT( post_rf.id._id == 0 );
 
-         modify( gpo, [&]( dynamic_global_property_object& g )
-         {
-            g.total_reward_fund_steem = asset( 0, STEEM_SYMBOL );
-            g.total_reward_shares2 = 0;
-         });
 
-//      case STEEMIT_HARDFORK_0_19:
-         modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
-         {
-            gpo.vote_power_reserve_rate = 10;
-         });
-
-         /* Remove all 0 delegation objects */
-         vector< const vesting_delegation_object* > to_remove;
-         const auto& delegation_idx = get_index< vesting_delegation_index, by_id >();
-         auto delegation_itr = delegation_idx.begin();
-
-         while( delegation_itr != delegation_idx.end() )
-         {
-            if( delegation_itr->vesting_shares.amount == 0 )
-               to_remove.push_back( &(*delegation_itr) );
-
-            ++delegation_itr;
-         }
-
-         for( const vesting_delegation_object* delegation_ptr: to_remove )
-         {
-            remove( *delegation_ptr );
-         }
+//         /* Remove all 0 delegation objects */
+//         vector< const vesting_delegation_object* > to_remove;
+//         const auto& delegation_idx = get_index< vesting_delegation_index, by_id >();
+//         auto delegation_itr = delegation_idx.begin();
+//
+//         while( delegation_itr != delegation_idx.end() )
+//         {
+//            if( delegation_itr->vesting_shares.amount == 0 )
+//               to_remove.push_back( &(*delegation_itr) );
+//
+//            ++delegation_itr;
+//         }
+//
+//         for( const vesting_delegation_object* delegation_ptr: to_remove )
+//         {
+//            remove( *delegation_ptr );
+//         }
    }
    FC_CAPTURE_AND_RETHROW()
 }
