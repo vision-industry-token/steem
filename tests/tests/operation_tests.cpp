@@ -6170,7 +6170,8 @@ BOOST_AUTO_TEST_CASE( delegate_vesting_shares_authorities )
       BOOST_TEST_MESSAGE( "Testing: delegate_vesting_shares_authorities" );
       signed_transaction tx;
       ACTORS( (alice)(bob) )
-      vest( "alice", ASSET( "10000.000000 VESTS" ) );
+      generate_block();
+      vest( "alice", ASSET( "10000.000 TESTS" ) );
 
       delegate_vesting_shares_operation op;
       op.vesting_shares = ASSET( "300.000000 VESTS");

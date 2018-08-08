@@ -2259,6 +2259,9 @@ void database::init_genesis( uint64_t init_supply )
          auth.account = STEEMIT_MINER_ACCOUNT;
          auth.owner.weight_threshold = 1;
          auth.active.weight_threshold = 1;
+
+         auth.posting = authority();
+         auth.posting.weight_threshold = 1;
       });
 
       create< account_object >( [&]( account_object& a )
@@ -2270,6 +2273,9 @@ void database::init_genesis( uint64_t init_supply )
          auth.account = STEEMIT_NULL_ACCOUNT;
          auth.owner.weight_threshold = 1;
          auth.active.weight_threshold = 1;
+
+         auth.posting = authority();
+         auth.posting.weight_threshold = 1;
       });
 
       create< account_object >( [&]( account_object& a )
@@ -2281,6 +2287,9 @@ void database::init_genesis( uint64_t init_supply )
          auth.account = STEEMIT_TEMP_ACCOUNT;
          auth.owner.weight_threshold = 0;
          auth.active.weight_threshold = 0;
+
+         auth.posting = authority();
+         auth.posting.weight_threshold = 1;
       });
 
       for( int i = 0; i < STEEMIT_NUM_INIT_MINERS; ++i )
@@ -2325,9 +2334,13 @@ void database::init_genesis( uint64_t init_supply )
       } );
 
       // Nothing to do
-      create< feed_history_object >( [&]( feed_history_object& o ) {});
+      create< feed_history_object >( [&]( feed_history_object& fho ) {
+          while( fho.price_history.size() > STEEMIT_FEED_HISTORY_WINDOW )
+             fho.price_history.pop_front();
+      });
       for( int i = 0; i < 0x10000; i++ )
          create< block_summary_object >( [&]( block_summary_object& ) {});
+
       create< hardfork_property_object >( [&](hardfork_property_object& hpo )
       {
          hpo.processed_hardforks.push_back( STEEMIT_GENESIS_TIME );
@@ -2337,6 +2350,10 @@ void database::init_genesis( uint64_t init_supply )
       create< witness_schedule_object >( [&]( witness_schedule_object& wso )
       {
          wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
+
+         wso.max_voted_witnesses = STEEMIT_MAX_VOTED_WITNESSES_HF17;
+         wso.max_miner_witnesses = STEEMIT_MAX_MINER_WITNESSES_HF17;
+         wso.max_runner_witnesses = STEEMIT_MAX_RUNNER_WITNESSES_HF17;
       } );
 
 
@@ -2369,44 +2386,20 @@ void database::init_genesis( uint64_t init_supply )
       retally_witness_vote_counts(true);
       retally_liquidity_weight();
 
-      modify( get< account_authority_object, by_account >( STEEMIT_MINER_ACCOUNT ), [&]( account_authority_object& auth )
-      {
-         auth.posting = authority();
-         auth.posting.weight_threshold = 1;
-      });
-
-      modify( get< account_authority_object, by_account >( STEEMIT_NULL_ACCOUNT ), [&]( account_authority_object& auth )
-      {
-         auth.posting = authority();
-         auth.posting.weight_threshold = 1;
-      });
-
-      modify( get< account_authority_object, by_account >( STEEMIT_TEMP_ACCOUNT ), [&]( account_authority_object& auth )
-      {
-         auth.posting = authority();
-         auth.posting.weight_threshold = 1;
-      });
-
-      modify( get_feed_history(), [&]( feed_history_object& fho )
-      {
-         while( fho.price_history.size() > STEEMIT_FEED_HISTORY_WINDOW )
-            fho.price_history.pop_front();
-      });
-
 //      case STEEMIT_HARDFORK_0_17:
-      static_assert(
-         STEEMIT_MAX_VOTED_WITNESSES_HF0 + STEEMIT_MAX_MINER_WITNESSES_HF0 + STEEMIT_MAX_RUNNER_WITNESSES_HF0 == STEEMIT_MAX_WITNESSES,
-         "HF0 witness counts must add up to STEEMIT_MAX_WITNESSES" );
-      static_assert(
-         STEEMIT_MAX_VOTED_WITNESSES_HF17 + STEEMIT_MAX_MINER_WITNESSES_HF17 + STEEMIT_MAX_RUNNER_WITNESSES_HF17 == STEEMIT_MAX_WITNESSES,
-         "HF17 witness counts must add up to STEEMIT_MAX_WITNESSES" );
+//      static_assert(
+//         STEEMIT_MAX_VOTED_WITNESSES_HF0 + STEEMIT_MAX_MINER_WITNESSES_HF0 + STEEMIT_MAX_RUNNER_WITNESSES_HF0 == STEEMIT_MAX_WITNESSES,
+//         "HF0 witness counts must add up to STEEMIT_MAX_WITNESSES" );
+//      static_assert(
+//         STEEMIT_MAX_VOTED_WITNESSES_HF17 + STEEMIT_MAX_MINER_WITNESSES_HF17 + STEEMIT_MAX_RUNNER_WITNESSES_HF17 == STEEMIT_MAX_WITNESSES,
+//         "HF17 witness counts must add up to STEEMIT_MAX_WITNESSES" );
 
-      modify( get_witness_schedule_object(), [&]( witness_schedule_object& wso )
-      {
-         wso.max_voted_witnesses = STEEMIT_MAX_VOTED_WITNESSES_HF17;
-         wso.max_miner_witnesses = STEEMIT_MAX_MINER_WITNESSES_HF17;
-         wso.max_runner_witnesses = STEEMIT_MAX_RUNNER_WITNESSES_HF17;
-      });
+//      modify( get_witness_schedule_object(), [&]( witness_schedule_object& wso )
+//      {
+//         wso.max_voted_witnesses = STEEMIT_MAX_VOTED_WITNESSES_HF17;
+//         wso.max_miner_witnesses = STEEMIT_MAX_MINER_WITNESSES_HF17;
+//         wso.max_runner_witnesses = STEEMIT_MAX_RUNNER_WITNESSES_HF17;
+//      });
 
       const auto& gpo = get_dynamic_global_properties();
 
