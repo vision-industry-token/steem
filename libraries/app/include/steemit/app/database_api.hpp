@@ -277,16 +277,6 @@ class database_api
        */
       uint64_t get_witness_count()const;
 
-      ////////////
-      // Market //
-      ////////////
-
-      /**
-       * @breif Gets the current liquidity reward queue.
-       * @param start_account The account to start the list from, or "" to get the head of the queue
-       * @param limit Maxmimum number of accounts to return -- Must not exceed 1000
-       */
-      vector< liquidity_balance > get_liquidity_queue( string start_account, uint32_t limit = 1000 )const;
 
       ////////////////////////////
       // Authority / validation //
@@ -499,9 +489,6 @@ FC_API(steemit::app::database_api,
    (get_savings_withdraw_to)
    (get_vesting_delegations)
    (get_expiring_vesting_delegations)
-
-   // Market
-   (get_liquidity_queue)
 
    // Authority / validation
    (get_transaction_hex)
