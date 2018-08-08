@@ -6221,7 +6221,7 @@ BOOST_AUTO_TEST_CASE( delegate_vesting_shares_apply )
       ACTORS( (alice)(bob) )
       generate_block();
 
-      vest( "alice", ASSET( "1000.000 TESTS" ) );
+      vest( "alice", ASSET( "10000.000 TESTS" ) );
 
       generate_block();
 
@@ -6236,7 +6236,7 @@ BOOST_AUTO_TEST_CASE( delegate_vesting_shares_apply )
       generate_block();
 
       delegate_vesting_shares_operation op;
-      op.vesting_shares = ASSET( "10000000.000000 VESTS");
+      op.vesting_shares = ASSET( "1000.000000 VESTS");
       op.delegator = "alice";
       op.delegatee = "bob";
 
@@ -6248,19 +6248,19 @@ BOOST_AUTO_TEST_CASE( delegate_vesting_shares_apply )
       const account_object& alice_acc = db.get_account( "alice" );
       const account_object& bob_acc = db.get_account( "bob" );
 
-      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "10000000.000000 VESTS"));
-      BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "10000000.000000 VESTS"));
+      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "1000.000000 VESTS"));
+      BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "1000.000000 VESTS"));
 
       BOOST_TEST_MESSAGE( "--- Test that the delegation object is correct. " );
       auto delegation = db.find< vesting_delegation_object, by_delegation >( boost::make_tuple( op.delegator, op.delegatee ) );
 
       BOOST_REQUIRE( delegation != nullptr );
       BOOST_REQUIRE( delegation->delegator == op.delegator);
-      BOOST_REQUIRE( delegation->vesting_shares  == ASSET( "10000000.000000 VESTS"));
+      BOOST_REQUIRE( delegation->vesting_shares  == ASSET( "1000.000000 VESTS"));
 
       validate_database();
       tx.clear();
-      op.vesting_shares = ASSET( "20000000.000000 VESTS");
+      op.vesting_shares = ASSET( "2000.000000 VESTS");
       tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
       tx.operations.push_back( op );
       tx.sign( alice_private_key, db.get_chain_id() );
@@ -6269,9 +6269,9 @@ BOOST_AUTO_TEST_CASE( delegate_vesting_shares_apply )
 
       BOOST_REQUIRE( delegation != nullptr );
       BOOST_REQUIRE( delegation->delegator == op.delegator);
-      BOOST_REQUIRE( delegation->vesting_shares == ASSET( "20000000.000000 VESTS"));
-      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "20000000.000000 VESTS"));
-      BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "20000000.000000 VESTS"));
+      BOOST_REQUIRE( delegation->vesting_shares == ASSET( "2000.000000 VESTS"));
+      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "2000.000000 VESTS"));
+      BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "2000.000000 VESTS"));
 
       BOOST_TEST_MESSAGE( "--- Test that effective vesting shares is accurate and being applied." );
       tx.operations.clear();
