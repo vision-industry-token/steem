@@ -972,48 +972,49 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when)const
  */
 std::pair< asset, asset > database::create_sbd( const account_object& to_account, asset steem, bool to_reward_balance )
 {
-   std::pair< asset, asset > assets( asset( 0, SBD_SYMBOL ), asset( 0, STEEM_SYMBOL ) );
-
-   try
-   {
-      if( steem.amount == 0 )
-         return assets;
-
-      const auto& median_price = get_feed_history().current_median_history;
-      const auto& gpo = get_dynamic_global_properties();
-
-      if( !median_price.is_null() )
-      {
-         auto to_sbd = ( gpo.sbd_print_rate * steem.amount ) / STEEMIT_100_PERCENT;
-         auto to_steem = steem.amount - to_sbd;
-
-         auto sbd = asset( to_sbd, STEEM_SYMBOL ) * median_price;
-
-         if( to_reward_balance )
-         {
-            adjust_reward_balance( to_account, sbd );
-            adjust_reward_balance( to_account, asset( to_steem, STEEM_SYMBOL ) );
-         }
-         else
-         {
-            adjust_balance( to_account, sbd );
-            adjust_balance( to_account, asset( to_steem, STEEM_SYMBOL ) );
-         }
-
-         adjust_supply( asset( -to_sbd, STEEM_SYMBOL ) );
-         adjust_supply( sbd );
-         assets.first = sbd;
-         assets.second = to_steem;
-      }
-      else
-      {
-         adjust_balance( to_account, steem );
-         assets.second = steem;
-      }
-   }
-   FC_CAPTURE_LOG_AND_RETHROW( (to_account.name)(steem) )
-
-   return assets;
+   FC_ASSERT( false, "SBD_SYMBOL is disabled" );
+//   std::pair< asset, asset > assets( asset( 0, SBD_SYMBOL ), asset( 0, STEEM_SYMBOL ) );
+//
+//   try
+//   {
+//      if( steem.amount == 0 )
+//         return assets;
+//
+//      const auto& median_price = get_feed_history().current_median_history;
+//      const auto& gpo = get_dynamic_global_properties();
+//
+//      if( !median_price.is_null() )
+//      {
+//         auto to_sbd = ( gpo.sbd_print_rate * steem.amount ) / STEEMIT_100_PERCENT;
+//         auto to_steem = steem.amount - to_sbd;
+//
+//         auto sbd = asset( to_sbd, STEEM_SYMBOL ) * median_price;
+//
+//         if( to_reward_balance )
+//         {
+//            adjust_reward_balance( to_account, sbd );
+//            adjust_reward_balance( to_account, asset( to_steem, STEEM_SYMBOL ) );
+//         }
+//         else
+//         {
+//            adjust_balance( to_account, sbd );
+//            adjust_balance( to_account, asset( to_steem, STEEM_SYMBOL ) );
+//         }
+//
+//         adjust_supply( asset( -to_sbd, STEEM_SYMBOL ) );
+//         adjust_supply( sbd );
+//         assets.first = sbd;
+//         assets.second = to_steem;
+//      }
+//      else
+//      {
+//         adjust_balance( to_account, steem );
+//         assets.second = steem;
+//      }
+//   }
+//   FC_CAPTURE_LOG_AND_RETHROW( (to_account.name)(steem) )
+//
+//   return assets;
 }
 
 /**
@@ -1703,24 +1704,19 @@ void database::process_comment_cashout()
 }
 
 /**
- *  Overall the network has an inflation rate of 102% of virtual steem per year
- *  90% of inflation is directed to vesting shares
- *  10% of inflation is directed to subjective proof of work voting
- *  1% of inflation is directed to liquidity providers
- *  1% of inflation is directed to block producers
+ * inflation 10% to 1% in 10 years
  *
- *  This method pays out vesting and reward shares every block, and liquidity shares once per day.
- *  This method does not pay out witnesses.
+ * reward allocation:
+ *  - 15% vesting
+ *  - 72.75% content
+ *  - 2.25% partners
+ *  - 10% witnesses
  */
 void database::process_funds()
 {
    const auto& props = get_dynamic_global_properties();
    const auto& wso = get_witness_schedule_object();
 
-   /**
-    * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
-    * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
-    */
    int64_t start_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_START_PERCENT );
    int64_t inflation_rate_adjustment = int64_t( head_block_num() / STEEMIT_INFLATION_NARROWING_PERIOD );
    int64_t inflation_rate_floor = int64_t( STEEMIT_INFLATION_RATE_STOP_PERCENT );
@@ -1730,9 +1726,10 @@ void database::process_funds()
 
    auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
    auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
-   content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
+   content_reward = pay_reward_funds( content_reward ); /// 72.75% to content creator
    auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
-   auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
+   auto hosting_reward = ( new_steem * STEEMIT_HOSTING_PERCENT ) / STEEMIT_100_PERCENT; /// 2.25% partners hosting content
+   auto witness_reward = new_steem - content_reward - vesting_reward - hosting_reward; /// Remaining 10% to witness pay
 
    const auto& cwit = get_witness( props.current_witness );
    witness_reward *= STEEMIT_MAX_WITNESSES;
@@ -1748,7 +1745,7 @@ void database::process_funds()
 
    witness_reward /= wso.witness_pay_normalization_factor;
 
-   new_steem = content_reward + vesting_reward + witness_reward;
+   new_steem = content_reward + vesting_reward + witness_reward + hosting_reward;
 
    modify( props, [&]( dynamic_global_property_object& p )
    {
@@ -1759,6 +1756,13 @@ void database::process_funds()
 
    const auto& producer_reward = create_vesting( get_account( cwit.owner ), asset( witness_reward, STEEM_SYMBOL ) );
    push_virtual_operation( producer_reward_operation( cwit.owner, producer_reward ) );
+
+
+   /// need virtual operation?
+   modify( get_account( STEEMIT_HOSTING_ACCOUNT ), [&]( account_object& a )
+   {
+       a.balance += hosting_reward;
+   });
 }
 
 void database::process_savings_withdraws()
@@ -2317,6 +2321,24 @@ void database::init_genesis( uint64_t init_supply )
             w.schedule = witness_object::miner;
          } );
       }
+
+      ///////////////////
+      /// account `hosting` holds fund for partners hosting content
+      create< account_object >( [&]( account_object& a )
+      {
+         a.name = STEEMIT_HOSTING_ACCOUNT;
+         a.memo_key = init_public_key;
+         a.balance  = asset( 0, STEEM_SYMBOL );
+      } );
+
+      create< account_authority_object >( [&]( account_authority_object& auth )
+      {
+         auth.account = STEEMIT_HOSTING_ACCOUNT;
+         auth.owner.add_authority( init_public_key, 1 );
+         auth.owner.weight_threshold = 1;
+         auth.active  = auth.owner;
+         auth.posting = auth.active;
+      });
 
       create< dynamic_global_property_object >( [&]( dynamic_global_property_object& p )
       {
@@ -2984,23 +3006,23 @@ void database::update_virtual_supply()
 { try {
    modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& dgp )
    {
-      dgp.virtual_supply = dgp.current_supply
-         + ( get_feed_history().current_median_history.is_null() ? asset( 0, STEEM_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
-
-      auto median_price = get_feed_history().current_median_history;
-
-      if( !median_price.is_null() )
-      {
-         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEMIT_100_PERCENT )
-            / dgp.virtual_supply.amount.value ).to_uint64() );
-
-         if( percent_sbd <= STEEMIT_SBD_START_PERCENT )
-            dgp.sbd_print_rate = STEEMIT_100_PERCENT;
-         else if( percent_sbd >= STEEMIT_SBD_STOP_PERCENT )
-            dgp.sbd_print_rate = 0;
-         else
-            dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
-      }
+      dgp.virtual_supply = dgp.current_supply;
+//         + ( get_feed_history().current_median_history.is_null() ? asset( 0, STEEM_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
+//
+//      auto median_price = get_feed_history().current_median_history;
+//
+//      if( !median_price.is_null() )
+//      {
+//         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEMIT_100_PERCENT )
+//            / dgp.virtual_supply.amount.value ).to_uint64() );
+//
+//         if( percent_sbd <= STEEMIT_SBD_START_PERCENT )
+//            dgp.sbd_print_rate = STEEMIT_100_PERCENT;
+//         else if( percent_sbd >= STEEMIT_SBD_STOP_PERCENT )
+//            dgp.sbd_print_rate = 0;
+//         else
+//            dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
+//      }
    });
 } FC_CAPTURE_AND_RETHROW() }
 
