@@ -281,11 +281,6 @@ class database_api
       // Market //
       ////////////
 
-      /**
-       * @breif Gets the current order book for STEEM:SBD market
-       * @param limit Maximum number of orders for each side of the spread to return -- Must not exceed 1000
-       */
-      order_book get_order_book( uint32_t limit = 1000 )const;
       vector<extended_limit_order> get_open_orders( string owner )const;
 
       /**
@@ -508,7 +503,6 @@ FC_API(steemit::app::database_api,
    (get_expiring_vesting_delegations)
 
    // Market
-   (get_order_book)
    (get_open_orders)
    (get_liquidity_queue)
 

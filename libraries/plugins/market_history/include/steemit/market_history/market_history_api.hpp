@@ -74,12 +74,6 @@ class market_history_api
       market_volume get_volume() const;
 
       /**
-       * @brief Returns the current order book for the internal SBD:STEEM market.
-       * @param limit The number of orders to have on each side of the order book. Maximum is 500
-       */
-      order_book get_order_book( uint32_t limit = 500 ) const;
-
-      /**
        * @brief Returns the trade history for the internal SBD:STEEM market.
        * @param start The start time of the trade history.
        * @param end The end time of the trade history.
@@ -129,7 +123,6 @@ FC_REFLECT( steemit::market_history::market_trade,
 FC_API( steemit::market_history::market_history_api,
    (get_ticker)
    (get_volume)
-   (get_order_book)
    (get_trade_history)
    (get_recent_trades)
    (get_market_history)

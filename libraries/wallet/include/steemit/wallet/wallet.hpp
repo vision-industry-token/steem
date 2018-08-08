@@ -810,12 +810,6 @@ class wallet_api
       void network_add_nodes( const vector<string>& nodes );
       vector< variant > network_get_connected_peers();
 
-      /**
-       * Gets the current order book for STEEM:SBD
-       *
-       * @param limit Maximum number of orders to return for bids and asks. Max is 1000.
-       */
-      order_book  get_order_book( uint32_t limit = 1000 );
       vector<extended_limit_order>  get_open_orders( string accountname );
 
       /**
@@ -1051,7 +1045,6 @@ FC_API( steemit::wallet::wallet_api,
         (set_withdraw_vesting_route)
         (convert_sbd)
         (publish_feed)
-        (get_order_book)
         (get_open_orders)
         (create_order)
         (cancel_order)

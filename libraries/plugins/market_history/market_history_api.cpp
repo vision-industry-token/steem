@@ -15,7 +15,6 @@ class market_history_api_impl
 
       market_ticker get_ticker() const;
       market_volume get_volume() const;
-      order_book get_order_book( uint32_t limit ) const;
       vector< market_trade > get_trade_history( time_point_sec start, time_point_sec end, uint32_t limit ) const;
       vector< market_trade > get_recent_trades( uint32_t limit ) const;
       vector< bucket_object > get_market_history( uint32_t bucket_seconds, time_point_sec start, time_point_sec end ) const;
@@ -44,11 +43,6 @@ market_ticker market_history_api_impl::get_ticker() const
       result.percent_change = 0;
    }
 
-   auto orders = get_order_book( 1 );
-   if( orders.bids.size() )
-      result.highest_bid = orders.bids[0].price;
-   if( orders.asks.size() )
-      result.lowest_ask = orders.asks[0].price;
 
    auto volume = get_volume();
    result.steem_volume = volume.steem_volume;
@@ -75,40 +69,6 @@ market_volume market_history_api_impl::get_volume() const
 
       ++itr;
    } while( itr != bucket_idx.end() && itr->seconds == bucket_size );
-
-   return result;
-}
-
-order_book market_history_api_impl::get_order_book( uint32_t limit ) const
-{
-   FC_ASSERT( limit <= 500 );
-
-   const auto& order_idx = app.chain_database()->get_index< steemit::chain::limit_order_index >().indices().get< steemit::chain::by_price >();
-   auto itr = order_idx.lower_bound( price::max( SBD_SYMBOL, STEEM_SYMBOL ) );
-
-   order_book result;
-
-   while( itr != order_idx.end() && itr->sell_price.base.symbol == SBD_SYMBOL && result.bids.size() < limit )
-   {
-      order cur;
-      cur.price = itr->sell_price.base.to_real() / itr->sell_price.quote.to_real();
-      cur.steem = ( asset( itr->for_sale, SBD_SYMBOL ) * itr->sell_price ).amount;
-      cur.sbd = itr->for_sale;
-      result.bids.push_back( cur );
-      ++itr;
-   }
-
-   itr = order_idx.lower_bound( price::max( STEEM_SYMBOL, SBD_SYMBOL ) );
-
-   while( itr != order_idx.end() && itr->sell_price.base.symbol == STEEM_SYMBOL && result.asks.size() < limit )
-   {
-      order cur;
-      cur.price = itr->sell_price.quote.to_real() / itr->sell_price.base.to_real();
-      cur.steem = itr->for_sale;
-      cur.sbd = ( asset( itr->for_sale, STEEM_SYMBOL ) * itr->sell_price ).amount;
-      result.asks.push_back( cur );
-      ++itr;
-   }
 
    return result;
 }
@@ -200,14 +160,6 @@ market_volume market_history_api::get_volume() const
    return my->app.chain_database()->with_read_lock( [&]()
    {
       return my->get_volume();
-   });
-}
-
-order_book market_history_api::get_order_book( uint32_t limit ) const
-{
-   return my->app.chain_database()->with_read_lock( [&]()
-   {
-      return my->get_order_book( limit );
    });
 }
 
