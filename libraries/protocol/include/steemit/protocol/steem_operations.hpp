@@ -544,75 +544,6 @@ namespace steemit { namespace protocol {
       void validate()const;
    };
 
-
-   struct pow_operation : public base_operation
-   {
-      account_name_type worker_account;
-      block_id_type     block_id;
-      uint64_t          nonce = 0;
-      pow               work;
-      chain_properties  props;
-
-      void validate()const;
-      fc::sha256 work_input()const;
-
-      const account_name_type& get_worker_account()const { return worker_account; }
-
-      /** there is no need to verify authority, the proof of work is sufficient */
-      void get_required_active_authorities( flat_set<account_name_type>& a )const{  }
-   };
-
-
-   struct pow2_input
-   {
-      account_name_type worker_account;
-      block_id_type     prev_block;
-      uint64_t          nonce = 0;
-   };
-
-
-   struct pow2
-   {
-      pow2_input        input;
-      uint32_t          pow_summary = 0;
-
-      void create( const block_id_type& prev_block, const account_name_type& account_name, uint64_t nonce );
-      void validate()const;
-   };
-
-   struct equihash_pow
-   {
-      pow2_input           input;
-      fc::equihash::proof  proof;
-      block_id_type        prev_block;
-      uint32_t             pow_summary = 0;
-
-      void create( const block_id_type& recent_block, const account_name_type& account_name, uint32_t nonce );
-      void validate() const;
-   };
-
-   typedef fc::static_variant< pow2, equihash_pow > pow2_work;
-
-   struct pow2_operation : public base_operation
-   {
-      pow2_work                     work;
-      optional< public_key_type >   new_owner_key;
-      chain_properties              props;
-
-      void validate()const;
-
-      void get_required_active_authorities( flat_set<account_name_type>& a )const;
-
-      void get_required_authorities( vector< authority >& a )const
-      {
-         if( new_owner_key )
-         {
-            a.push_back( authority( 1, *new_owner_key, 1 ) );
-         }
-      }
-   };
-
-
    /**
     * This operation is used to report a miner who signs two blocks
     * at the same time. To be valid, the violation must be reported within
@@ -891,10 +822,6 @@ FC_REFLECT( steemit::protocol::pow2, (input)(pow_summary) )
 FC_REFLECT( steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce) )
 FC_REFLECT( steemit::protocol::equihash_pow, (input)(proof)(prev_block)(pow_summary) )
 FC_REFLECT( steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) );
-
-FC_REFLECT_TYPENAME( steemit::protocol::pow2_work )
-FC_REFLECT( steemit::protocol::pow_operation, (worker_account)(block_id)(nonce)(work)(props) )
-FC_REFLECT( steemit::protocol::pow2_operation, (work)(new_owner_key)(props) )
 
 FC_REFLECT( steemit::protocol::account_create_operation,
             (fee)

@@ -1030,7 +1030,7 @@ BOOST_AUTO_TEST_CASE( vote_apply )
 
          BOOST_TEST_MESSAGE( "--- Test failure when increasing rshares within lockout period" );
 
-         generate_blocks( fc::time_point_sec( ( new_bob_comment.cashout_time - STEEMIT_UPVOTE_LOCKOUT_HF17 ).sec_since_epoch() + STEEMIT_BLOCK_INTERVAL ), true );
+         generate_blocks( fc::time_point_sec( ( new_bob_comment.cashout_time - STEEMIT_UPVOTE_LOCKOUT ).sec_since_epoch() + STEEMIT_BLOCK_INTERVAL ), true );
 
          op.weight = STEEMIT_100_PERCENT;
          tx.operations.clear();
@@ -2495,15 +2495,6 @@ BOOST_AUTO_TEST_CASE( pow_authorities )
    try
    {
       BOOST_TEST_MESSAGE( "Testing: pow_authorities" );
-   }
-   FC_LOG_AND_RETHROW()
-}
-
-BOOST_AUTO_TEST_CASE( pow_apply )
-{
-   try
-   {
-      BOOST_TEST_MESSAGE( "Testing: pow_apply" );
    }
    FC_LOG_AND_RETHROW()
 }

@@ -108,8 +108,6 @@ struct bucket_object : public object< bucket_object_type, bucket_object >
    share_type           sbd_to_be_converted = 0;                     ///< Amount of SBD to be converted
    uint32_t             sbd_conversion_requests_filled = 0;          ///< SBD conversion requests filled
    share_type           steem_converted = 0;                         ///< Amount of STEEM that was converted
-   uint32_t             total_pow = 0;                               ///< POW submitted
-   uint128_t            estimated_hashpower = 0;                     ///< Estimated average hashpower over interval
 };
 
 typedef oid< bucket_object > bucket_id_type;
@@ -173,7 +171,5 @@ FC_REFLECT( steemit::blockchain_statistics::bucket_object,
    (sbd_to_be_converted)
    (sbd_conversion_requests_filled)
    (steem_converted)
-   (total_pow)
-   (estimated_hashpower)
 )
 CHAINBASE_SET_INDEX_TYPE( steemit::blockchain_statistics::bucket_object, steemit::blockchain_statistics::bucket_index )

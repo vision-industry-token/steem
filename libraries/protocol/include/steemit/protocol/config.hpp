@@ -22,13 +22,10 @@
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1451606400))
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(1451606400))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
-#define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12 (STEEMIT_CASHOUT_WINDOW_SECONDS)
-#define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 (STEEMIT_CASHOUT_WINDOW_SECONDS)
 #define STEEMIT_SECOND_CASHOUT_WINDOW           (60*60*24*3) /// 3 days
 #define STEEMIT_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24) /// 1 day
 #define STEEMIT_VOTE_CHANGE_LOCKOUT_PERIOD      (60*10) /// 10 minutes
-#define STEEMIT_UPVOTE_LOCKOUT_HF7              (fc::minutes(1))
-#define STEEMIT_UPVOTE_LOCKOUT_HF17             (fc::minutes(5))
+#define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(5))
 
 
 #define STEEMIT_ORIGINAL_MIN_ACCOUNT_CREATION_FEE 0
@@ -59,14 +56,11 @@
 
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1458835200))
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(1458838800))
-#define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12 (60*60*24)    /// 1 day
-#define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 (60*60*12)    /// 12 hours
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
 #define STEEMIT_SECOND_CASHOUT_WINDOW           (60*60*24*30) /// 30 days
 #define STEEMIT_MAX_CASHOUT_WINDOW_SECONDS      (60*60*24*14) /// 2 weeks
 #define STEEMIT_VOTE_CHANGE_LOCKOUT_PERIOD      (60*60*2)     /// 2 hours
-#define STEEMIT_UPVOTE_LOCKOUT_HF7              (fc::minutes(1))
-#define STEEMIT_UPVOTE_LOCKOUT_HF17             (fc::hours(12))
+#define STEEMIT_UPVOTE_LOCKOUT                  (fc::hours(12))
 
 #define STEEMIT_ORIGINAL_MIN_ACCOUNT_CREATION_FEE  100000
 #define STEEMIT_MIN_ACCOUNT_CREATION_FEE           0
@@ -155,13 +149,10 @@
 #define STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME     fc::days(30)
 
 #define STEEMIT_MINING_REWARD                   asset( 1000, STEEM_SYMBOL )
-#define STEEMIT_EQUIHASH_N                      140
-#define STEEMIT_EQUIHASH_K                      6
 
 #define STEEMIT_MIN_CONTENT_REWARD              STEEMIT_MINING_REWARD
 #define STEEMIT_MIN_CURATE_REWARD               STEEMIT_MINING_REWARD
 #define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_POW_REWARD                  STEEMIT_MINING_REWARD
 
 #define STEEMIT_ACTIVE_CHALLENGE_FEE            asset( 2000, STEEM_SYMBOL )
 #define STEEMIT_OWNER_CHALLENGE_FEE             asset( 30000, STEEM_SYMBOL )
@@ -173,42 +164,6 @@
 #define STEEMIT_RECENT_RSHARES_DECAY_RATE_HF17  (fc::days(30))
 #define STEEMIT_RECENT_RSHARES_DECAY_RATE_HF19  (fc::days(15))
 #define STEEMIT_CONTENT_CONSTANT_HF0            (uint128_t(uint64_t(2000000000000ll)))
-// note, if redefining these constants make sure calculate_claims doesn't overflow
-
-// 5ccc e802 de5f
-// int(expm1( log1p( 1 ) / BLOCKS_PER_YEAR ) * 2**STEEMIT_APR_PERCENT_SHIFT_PER_BLOCK / 100000 + 0.5)
-// we use 100000 here instead of 10000 because we end up creating an additional 9x for vesting
-#define STEEMIT_APR_PERCENT_MULTIPLY_PER_BLOCK          ( (uint64_t( 0x5ccc ) << 0x20) \
-                                                        | (uint64_t( 0xe802 ) << 0x10) \
-                                                        | (uint64_t( 0xde5f )        ) \
-                                                        )
-// chosen to be the maximal value such that STEEMIT_APR_PERCENT_MULTIPLY_PER_BLOCK * 2**64 * 100000 < 2**128
-#define STEEMIT_APR_PERCENT_SHIFT_PER_BLOCK             87
-
-#define STEEMIT_APR_PERCENT_MULTIPLY_PER_ROUND          ( (uint64_t( 0x79cc ) << 0x20 ) \
-                                                        | (uint64_t( 0xf5c7 ) << 0x10 ) \
-                                                        | (uint64_t( 0x3480 )         ) \
-                                                        )
-
-#define STEEMIT_APR_PERCENT_SHIFT_PER_ROUND             83
-
-// We have different constants for hourly rewards
-// i.e. hex(int(math.expm1( math.log1p( 1 ) / HOURS_PER_YEAR ) * 2**STEEMIT_APR_PERCENT_SHIFT_PER_HOUR / 100000 + 0.5))
-#define STEEMIT_APR_PERCENT_MULTIPLY_PER_HOUR           ( (uint64_t( 0x6cc1 ) << 0x20) \
-                                                        | (uint64_t( 0x39a1 ) << 0x10) \
-                                                        | (uint64_t( 0x5cbd )        ) \
-                                                        )
-
-// chosen to be the maximal value such that STEEMIT_APR_PERCENT_MULTIPLY_PER_HOUR * 2**64 * 100000 < 2**128
-#define STEEMIT_APR_PERCENT_SHIFT_PER_HOUR              77
-
-// These constants add up to GRAPHENE_100_PERCENT.  Each GRAPHENE_1_PERCENT is equivalent to 1% per year APY
-// *including the corresponding 9x vesting rewards*
-#define STEEMIT_CURATE_APR_PERCENT              3875
-#define STEEMIT_CONTENT_APR_PERCENT             3875
-#define STEEMIT_LIQUIDITY_APR_PERCENT            750
-#define STEEMIT_PRODUCER_APR_PERCENT             750
-#define STEEMIT_POW_APR_PERCENT                  750
 
 #define STEEMIT_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
 
@@ -236,11 +191,9 @@
 #define STEEMIT_MIN_BLOCK_SIZE                  115
 #define STEEMIT_BLOCKS_PER_HOUR                 (60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_FEED_INTERVAL_BLOCKS            (STEEMIT_BLOCKS_PER_HOUR)
-#define STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16   (24*7) /// 7 days * 24 hours per day
 #define STEEMIT_FEED_HISTORY_WINDOW             (12*7) // 3.5 days
 #define STEEMIT_MAX_FEED_AGE_SECONDS            (60*60*24*7) // 7 days
 #define STEEMIT_MIN_FEEDS                       (STEEMIT_MAX_WITNESSES/3) /// protects the network from conversions before price has been established
-#define STEEMIT_CONVERSION_DELAY_PRE_HF_16      (fc::days(7))
 #define STEEMIT_CONVERSION_DELAY                (fc::hours(STEEMIT_FEED_HISTORY_WINDOW)) //3.5 day conversion
 
 #define STEEMIT_MIN_UNDO_HISTORY                10
