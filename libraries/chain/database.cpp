@@ -1620,12 +1620,6 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
 void database::process_comment_cashout()
 {
-   /// don't allow any content to get paid out until the website is ready to launch
-   /// and people have had a week to start posting.  The first cashout will be the biggest because it
-   /// will represent 2+ months of rewards.
-   if( !has_hardfork( STEEMIT_FIRST_CASHOUT_TIME ) )
-      return;
-
    const auto& gpo = get_dynamic_global_properties();
    util::comment_reward_context ctx;
    ctx.current_steem_price = get_feed_history().current_median_history;
@@ -2423,11 +2417,11 @@ void database::init_genesis( uint64_t init_supply )
             rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
             rfo.percent_content_rewards = STEEMIT_100_PERCENT;
             rfo.reward_balance = gpo.total_reward_fund_steem;
+            rfo.author_reward_curve = curve_id::linear;
+            rfo.curation_reward_curve = curve_id::square_root;
 #ifndef IS_TEST_NET
-            rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
+            rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
 #endif
-            rfo.author_reward_curve = curve_id::quadratic;
-            rfo.curation_reward_curve = curve_id::quadratic_curation;
          });
 
          // As a shortcut in payout processing, we use the id as an array index.
@@ -2444,15 +2438,6 @@ void database::init_genesis( uint64_t init_supply )
          modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
          {
             gpo.vote_power_reserve_rate = 10;
-         });
-
-         modify( get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
-         {
-#ifndef IS_TEST_NET
-            rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
-#endif
-            rfo.author_reward_curve = curve_id::linear;
-            rfo.curation_reward_curve = curve_id::square_root;
          });
 
          /* Remove all 0 delegation objects */
