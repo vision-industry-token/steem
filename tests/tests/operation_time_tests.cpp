@@ -23,6 +23,8 @@ using namespace steemit;
 using namespace steemit::chain;
 using namespace steemit::protocol;
 
+#define STEEMIT_MIN_LIQUIDITY_REWARD_PERIOD_SEC_HF10 fc::seconds(60*30) /// 30 min
+
 BOOST_FIXTURE_TEST_SUITE( operation_time_tests, clean_database_fixture )
 
 BOOST_AUTO_TEST_CASE( comment_payout_equalize )
