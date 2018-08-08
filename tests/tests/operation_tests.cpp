@@ -6414,7 +6414,7 @@ BOOST_AUTO_TEST_CASE( issue_971_vesting_removal )
       ACTORS( (alice)(bob) )
       generate_block();
 
-      vest( "alice", ASSET( "1000.000 TESTS" ) );
+      vest( "alice", ASSET( "10000.000 TESTS" ) );
 
       generate_block();
 
@@ -6430,7 +6430,7 @@ BOOST_AUTO_TEST_CASE( issue_971_vesting_removal )
 
       signed_transaction tx;
       delegate_vesting_shares_operation op;
-      op.vesting_shares = ASSET( "10000000.000000 VESTS");
+      op.vesting_shares = ASSET( "1000.000000 VESTS");
       op.delegator = "alice";
       op.delegatee = "bob";
 
@@ -6442,8 +6442,8 @@ BOOST_AUTO_TEST_CASE( issue_971_vesting_removal )
       const account_object& alice_acc = db.get_account( "alice" );
       const account_object& bob_acc = db.get_account( "bob" );
 
-      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "10000000.000000 VESTS"));
-      BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "10000000.000000 VESTS"));
+      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "1000.000000 VESTS"));
+      BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "1000.000000 VESTS"));
 
       generate_block();
 
@@ -6465,7 +6465,7 @@ BOOST_AUTO_TEST_CASE( issue_971_vesting_removal )
       db.push_transaction( tx, 0 );
       generate_block();
 
-      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "10000000.000000 VESTS"));
+      BOOST_REQUIRE( alice_acc.delegated_vesting_shares == ASSET( "1000.000000 VESTS"));
       BOOST_REQUIRE( bob_acc.received_vesting_shares == ASSET( "0.000000 VESTS"));
    }
    FC_LOG_AND_RETHROW()
