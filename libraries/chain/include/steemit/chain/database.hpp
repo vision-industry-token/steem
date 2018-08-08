@@ -289,7 +289,6 @@ namespace steemit { namespace chain {
          asset create_vesting( const account_object& to_account, asset steem, bool to_reward_balance=false );
          void adjust_total_payout( const comment_object& a, const asset& sbd, const asset& curator_sbd_value, const asset& beneficiary_value );
 
-         void        adjust_liquidity_reward( const account_object& owner, const asset& volume, bool is_bid );
          void        adjust_balance( const account_object& a, const asset& delta );
          void        adjust_savings_balance( const account_object& a, const asset& delta );
          void        adjust_reward_balance( const account_object& a, const asset& delta );
@@ -332,7 +331,6 @@ namespace steemit { namespace chain {
          void process_decline_voting_rights();
          void update_median_feed();
 
-         asset get_liquidity_reward()const;
          asset get_content_reward()const;
          asset get_producer_reward();
          asset get_curation_reward()const;
@@ -341,8 +339,6 @@ namespace steemit { namespace chain {
          uint16_t get_curation_rewards_percent( const comment_object& c ) const;
 
          share_type pay_reward_funds( share_type reward );
-
-         void  pay_liquidity_reward();
 
          /**
           * Helper method to return the current sbd value of a given amount of
@@ -380,16 +376,10 @@ namespace steemit { namespace chain {
          std::deque< signed_transaction >       _popped_tx;
 
 
-         bool apply_order( const limit_order_object& new_order_object );
-         bool fill_order( const limit_order_object& order, const asset& pays, const asset& receives );
-         void cancel_order( const limit_order_object& obj );
-         int  match( const limit_order_object& bid, const limit_order_object& ask, const price& trade_price );
-
          void perform_vesting_share_split( uint32_t magnitude );
          void retally_comment_children();
          void retally_witness_votes();
          void retally_witness_vote_counts( bool force = false );
-         void retally_liquidity_weight();
          void update_virtual_supply();
 
          bool has_hardfork( uint32_t hardfork )const;
@@ -409,7 +399,6 @@ namespace steemit { namespace chain {
          void show_free_memory( bool force );
 
 #ifdef IS_TEST_NET
-         bool liquidity_rewards_enabled = true;
          bool skip_price_feed_limit_check = true;
          bool skip_transaction_delta_check = true;
 #endif

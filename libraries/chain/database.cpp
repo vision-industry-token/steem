@@ -1782,11 +1782,6 @@ void database::process_savings_withdraws()
   }
 }
 
-asset database::get_liquidity_reward()const
-{
-   return asset( 0, STEEM_SYMBOL );
-}
-
 asset database::get_content_reward()const
 {
    const auto& props = get_dynamic_global_properties();
@@ -1842,40 +1837,6 @@ asset database::get_pow_reward()const
    static_assert( STEEMIT_MAX_WITNESSES == 21, "this code assumes 21 per round" );
    asset percent( calc_percent_reward_per_round< STEEMIT_POW_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
    return std::max( percent, STEEMIT_MIN_POW_REWARD );
-}
-
-
-void database::pay_liquidity_reward()
-{
-#ifdef IS_TEST_NET
-   if( !liquidity_rewards_enabled )
-      return;
-#endif
-
-   if( (head_block_num() % STEEMIT_LIQUIDITY_REWARD_BLOCKS) == 0 )
-   {
-      auto reward = get_liquidity_reward();
-
-      if( reward.amount == 0 )
-         return;
-
-      const auto& ridx = get_index< liquidity_reward_balance_index >().indices().get< by_volume_weight >();
-      auto itr = ridx.begin();
-      if( itr != ridx.end() && itr->volume_weight() > 0 )
-      {
-         adjust_supply( reward, true );
-         adjust_balance( get(itr->owner), reward );
-         modify( *itr, [&]( liquidity_reward_balance_object& obj )
-         {
-            obj.steem_volume = 0;
-            obj.sbd_volume   = 0;
-            obj.last_update  = head_block_time();
-            obj.weight = 0;
-         } );
-
-         push_virtual_operation( liquidity_reward_operation( get(itr->owner).name, reward ) );
-      }
-   }
 }
 
 uint16_t database::get_curation_rewards_percent( const comment_object& c ) const
@@ -2145,10 +2106,8 @@ void database::initialize_indexes()
    add_core_index< comment_index                           >(*this);
    add_core_index< comment_vote_index                      >(*this);
    add_core_index< witness_vote_index                      >(*this);
-   add_core_index< limit_order_index                       >(*this);
    add_core_index< feed_history_index                      >(*this);
    add_core_index< convert_request_index                   >(*this);
-   add_core_index< liquidity_reward_balance_index          >(*this);
    add_core_index< operation_index                         >(*this);
    add_core_index< account_history_index                   >(*this);
    add_core_index< hardfork_property_index                 >(*this);
@@ -2384,7 +2343,6 @@ void database::init_genesis( uint64_t init_supply )
       retally_witness_vote_counts();
       retally_comment_children();
       retally_witness_vote_counts(true);
-      retally_liquidity_weight();
 
 //      case STEEMIT_HARDFORK_0_17:
 //      static_assert(
@@ -2675,7 +2633,6 @@ void database::_apply_block( const signed_block& next_block )
    process_comment_cashout();
    process_vesting_withdrawals();
    process_savings_withdraws();
-   pay_liquidity_reward();
    update_virtual_supply();
 
    account_recovery_processing();
@@ -3095,157 +3052,6 @@ void database::update_last_irreversible_block()
 } FC_CAPTURE_AND_RETHROW() }
 
 
-bool database::apply_order( const limit_order_object& new_order_object )
-{
-   auto order_id = new_order_object.id;
-
-   const auto& limit_price_idx = get_index<limit_order_index>().indices().get<by_price>();
-
-   auto max_price = ~new_order_object.sell_price;
-   auto limit_itr = limit_price_idx.lower_bound(max_price.max());
-   auto limit_end = limit_price_idx.upper_bound(max_price);
-
-   bool finished = false;
-   while( !finished && limit_itr != limit_end )
-   {
-      auto old_limit_itr = limit_itr;
-      ++limit_itr;
-      // match returns 2 when only the old order was fully filled. In this case, we keep matching; otherwise, we stop.
-      finished = ( match(new_order_object, *old_limit_itr, old_limit_itr->sell_price) & 0x1 );
-   }
-
-   return find< limit_order_object >( order_id ) == nullptr;
-}
-
-int database::match( const limit_order_object& new_order, const limit_order_object& old_order, const price& match_price )
-{
-   assert( new_order.sell_price.quote.symbol == old_order.sell_price.base.symbol );
-   assert( new_order.sell_price.base.symbol  == old_order.sell_price.quote.symbol );
-   assert( new_order.for_sale > 0 && old_order.for_sale > 0 );
-   assert( match_price.quote.symbol == new_order.sell_price.base.symbol );
-   assert( match_price.base.symbol == old_order.sell_price.base.symbol );
-
-   auto new_order_for_sale = new_order.amount_for_sale();
-   auto old_order_for_sale = old_order.amount_for_sale();
-
-   asset new_order_pays, new_order_receives, old_order_pays, old_order_receives;
-
-   if( new_order_for_sale <= old_order_for_sale * match_price )
-   {
-      old_order_receives = new_order_for_sale;
-      new_order_receives  = new_order_for_sale * match_price;
-   }
-   else
-   {
-      //This line once read: assert( old_order_for_sale < new_order_for_sale * match_price );
-      //This assert is not always true -- see trade_amount_equals_zero in operation_tests.cpp
-      //Although new_order_for_sale is greater than old_order_for_sale * match_price, old_order_for_sale == new_order_for_sale * match_price
-      //Removing the assert seems to be safe -- apparently no asset is created or destroyed.
-      new_order_receives = old_order_for_sale;
-      old_order_receives = old_order_for_sale * match_price;
-   }
-
-   old_order_pays = new_order_receives;
-   new_order_pays = old_order_receives;
-
-   assert( new_order_pays == new_order.amount_for_sale() || old_order_pays == old_order.amount_for_sale() );
-   push_virtual_operation( fill_order_operation( new_order.seller, new_order.orderid, new_order_pays, old_order.seller, old_order.orderid, old_order_pays ) );
-
-   int result = 0;
-   result |= fill_order( new_order, new_order_pays, new_order_receives );
-   result |= fill_order( old_order, old_order_pays, old_order_receives ) << 1;
-   assert( result != 0 );
-   return result;
-}
-
-
-void database::adjust_liquidity_reward( const account_object& owner, const asset& volume, bool is_sdb )
-{
-   const auto& ridx = get_index< liquidity_reward_balance_index >().indices().get< by_owner >();
-   auto itr = ridx.find( owner.id );
-   if( itr != ridx.end() )
-   {
-      modify<liquidity_reward_balance_object>( *itr, [&]( liquidity_reward_balance_object& r )
-      {
-         if( head_block_time() - r.last_update >= STEEMIT_LIQUIDITY_TIMEOUT_SEC )
-         {
-            r.sbd_volume = 0;
-            r.steem_volume = 0;
-            r.weight = 0;
-         }
-
-         if( is_sdb )
-            r.sbd_volume += volume.amount.value;
-         else
-            r.steem_volume += volume.amount.value;
-
-         r.update_weight( true );
-         r.last_update = head_block_time();
-      } );
-   }
-   else
-   {
-      create<liquidity_reward_balance_object>( [&](liquidity_reward_balance_object& r )
-      {
-         r.owner = owner.id;
-         if( is_sdb )
-            r.sbd_volume = volume.amount.value;
-         else
-            r.steem_volume = volume.amount.value;
-
-         r.update_weight( true );
-         r.last_update = head_block_time();
-      } );
-   }
-}
-
-
-bool database::fill_order( const limit_order_object& order, const asset& pays, const asset& receives )
-{
-   try
-   {
-      FC_ASSERT( order.amount_for_sale().symbol == pays.symbol );
-      FC_ASSERT( pays.symbol != receives.symbol );
-
-      const account_object& seller = get_account( order.seller );
-
-      adjust_balance( seller, receives );
-
-      if( pays == order.amount_for_sale() )
-      {
-         remove( order );
-         return true;
-      }
-      else
-      {
-         modify( order, [&]( limit_order_object& b )
-         {
-            b.for_sale -= pays.amount;
-         } );
-         /**
-          *  There are times when the AMOUNT_FOR_SALE * SALE_PRICE == 0 which means that we
-          *  have hit the limit where the seller is asking for nothing in return.  When this
-          *  happens we must refund any balance back to the seller, it is too small to be
-          *  sold at the sale price.
-          */
-         if( order.amount_to_receive().amount == 0 )
-         {
-            cancel_order(order);
-            return true;
-         }
-         return false;
-      }
-   }
-   FC_CAPTURE_AND_RETHROW( (order)(pays)(receives) )
-}
-
-void database::cancel_order( const limit_order_object& order )
-{
-   adjust_balance( get_account(order.seller), order.amount_for_sale() );
-   remove(order);
-}
-
-
 void database::clear_expired_transactions()
 {
    //Look for expired transactions in the deduplication list, and remove them.
@@ -3524,15 +3330,6 @@ void database::apply_hardfork( uint32_t hardfork )
    } );
 
    push_virtual_operation( hardfork_operation( hardfork ), true );
-}
-
-void database::retally_liquidity_weight() {
-   const auto& ridx = get_index< liquidity_reward_balance_index >().indices().get< by_owner >();
-   for( const auto& i : ridx ) {
-      modify( i, []( liquidity_reward_balance_object& o ){
-         o.update_weight(true/*HAS HARDFORK10 if this method is called*/);
-      });
-   }
 }
 
 /**

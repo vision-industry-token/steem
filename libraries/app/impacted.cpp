@@ -217,11 +217,6 @@ struct get_impacted_account_visitor
       _impacted.insert( op.curator );
    }
 
-   void operator()( const liquidity_reward_operation& op )
-   {
-      _impacted.insert( op.owner );
-   }
-
    void operator()( const interest_operation& op )
    {
       _impacted.insert( op.owner );
