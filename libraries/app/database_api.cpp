@@ -720,25 +720,6 @@ uint64_t database_api_impl::get_witness_count()const
 //                                                                  //
 //////////////////////////////////////////////////////////////////////
 
-vector<extended_limit_order> database_api::get_open_orders( string owner )const
-{
-   return my->_db.with_read_lock( [&]()
-   {
-      vector<extended_limit_order> result;
-      const auto& idx = my->_db.get_index<limit_order_index>().indices().get<by_account>();
-      auto itr = idx.lower_bound( owner );
-      while( itr != idx.end() && itr->seller == owner ) {
-         result.push_back( *itr );
-
-         if( itr->sell_price.base.symbol == STEEM_SYMBOL )
-            result.back().real_price = (~result.back().sell_price).to_real();
-         else
-            result.back().real_price = (result.back().sell_price).to_real();
-         ++itr;
-      }
-      return result;
-   });
-}
 
 vector< liquidity_balance > database_api::get_liquidity_queue( string start_account, uint32_t limit )const
 {

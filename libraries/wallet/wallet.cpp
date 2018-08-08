@@ -765,26 +765,6 @@ public:
          }
          return ss.str();
       };
-      m["get_open_orders"] = []( variant result, const fc::variants& a ) {
-          auto orders = result.as<vector<extended_limit_order>>();
-
-          std::stringstream ss;
-
-          ss << setiosflags( ios::fixed ) << setiosflags( ios::left ) ;
-          ss << ' ' << setw( 10 ) << "Order #";
-          ss << ' ' << setw( 10 ) << "Price";
-          ss << ' ' << setw( 10 ) << "Quantity";
-          ss << ' ' << setw( 10 ) << "Type";
-          ss << "\n=====================================================================================================\n";
-          for( const auto& o : orders ) {
-             ss << ' ' << setw( 10 ) << o.orderid;
-             ss << ' ' << setw( 10 ) << o.real_price;
-             ss << ' ' << setw( 10 ) << fc::variant( asset( o.for_sale, o.sell_price.base.symbol ) ).as_string();
-             ss << ' ' << setw( 10 ) << (o.sell_price.base.symbol == STEEM_SYMBOL ? "SELL" : "BUY");
-             ss << "\n";
-          }
-          return ss.str();
-      };
       m["get_withdraw_routes"] = []( variant result, const fc::variants& a )
       {
          auto routes = result.as< vector< withdraw_route > >();
@@ -2146,11 +2126,6 @@ app::state wallet_api::get_state( string url ) {
 vector< withdraw_route > wallet_api::get_withdraw_routes( string account, withdraw_route_type type )const
 {
    return my->_remote_db->get_withdraw_routes( account, type );
-}
-
-vector<extended_limit_order> wallet_api::get_open_orders( string owner )
-{
-   return my->_remote_db->get_open_orders( owner );
 }
 
 annotated_signed_transaction wallet_api::create_order(  string owner, uint32_t order_id, asset amount_to_sell, asset min_to_receive, bool fill_or_kill, uint32_t expiration_sec, bool broadcast )

@@ -810,7 +810,6 @@ class wallet_api
       void network_add_nodes( const vector<string>& nodes );
       vector< variant > network_get_connected_peers();
 
-      vector<extended_limit_order>  get_open_orders( string accountname );
 
       /**
        *  Creates a limit order at the price amount_to_sell / min_to_receive and will deduct amount_to_sell from account
@@ -1045,7 +1044,6 @@ FC_API( steemit::wallet::wallet_api,
         (set_withdraw_vesting_route)
         (convert_sbd)
         (publish_feed)
-        (get_open_orders)
         (create_order)
         (cancel_order)
         (post_comment)
