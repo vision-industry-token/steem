@@ -1441,13 +1441,12 @@ void database::process_vesting_withdrawals()
    }
 }
 
-void database::adjust_total_payout( const comment_object& cur, const asset& sbd_created, const asset& curator_sbd_value, const asset& beneficiary_value )
+void database::adjust_total_payout( const comment_object& cur, const asset& payout, const asset& curator, const asset& beneficiary_value )
 {
    modify( cur, [&]( comment_object& c )
    {
-      if( c.total_payout_value.symbol == sbd_created.symbol )
-         c.total_payout_value += sbd_created;
-         c.curator_payout_value += curator_sbd_value;
+         c.total_payout_value += payout;
+         c.curator_payout_value += curator;
          c.beneficiary_payout_value += beneficiary_value;
    } );
    /// TODO: potentially modify author's total payout numbers as well
@@ -1548,17 +1547,21 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             author_tokens -= total_beneficiary;
 
-            auto sbd_steem     = ( author_tokens * comment.percent_steem_dollars ) / ( 2 * STEEMIT_100_PERCENT ) ;
+            auto sbd_steem     = ( author_tokens * comment.percent_steem_dollars ) / ( 2 * STEEMIT_100_PERCENT ) ; // in STEEM_SYMBOL instead of SBD
             auto vesting_steem = author_tokens - sbd_steem;
 
             const auto& author = get_account( comment.author );
             auto vest_created = create_vesting( author, vesting_steem, true );
-            auto sbd_payout = create_sbd( author, sbd_steem, true );
+//            auto sbd_payout = create_sbd( author, sbd_steem, true );
 
-            adjust_total_payout( comment, sbd_payout.first + to_sbd( sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ) ), to_sbd( asset( curation_tokens, STEEM_SYMBOL ) ), to_sbd( asset( total_beneficiary, STEEM_SYMBOL ) ) );
+            //adjust_total_payout( comment, sbd_payout.first + to_sbd( sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ) ), to_sbd( asset( curation_tokens, STEEM_SYMBOL ) ), to_sbd( asset( total_beneficiary, STEEM_SYMBOL ) ) );
+            adjust_total_payout( comment,
+                                 asset( sbd_steem + vesting_steem, STEEM_SYMBOL ),
+                                 asset( curation_tokens, STEEM_SYMBOL ),
+                                 asset( total_beneficiary, STEEM_SYMBOL ) );
 
-            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), sbd_payout.first, sbd_payout.second, vest_created ) );
-            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), to_sbd( asset( claimed_reward, STEEM_SYMBOL ) ) ) );
+            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, STEEM_SYMBOL ), sbd_steem, vest_created ) );
+            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, STEEM_SYMBOL ) ) );
 
             #ifndef IS_LOW_MEM
                modify( comment, [&]( comment_object& c )
