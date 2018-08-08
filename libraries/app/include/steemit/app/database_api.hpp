@@ -40,12 +40,6 @@ struct order
    fc::time_point_sec   created;
 };
 
-struct order_book
-{
-   vector< order >      asks;
-   vector< order >      bids;
-};
-
 struct api_context;
 
 struct scheduled_hardfork
@@ -421,7 +415,6 @@ class database_api
 } }
 
 FC_REFLECT( steemit::app::order, (order_price)(real_price)(steem)(sbd)(created) );
-FC_REFLECT( steemit::app::order_book, (asks)(bids) );
 FC_REFLECT( steemit::app::scheduled_hardfork, (hf_version)(live_time) );
 FC_REFLECT( steemit::app::liquidity_balance, (account)(weight) );
 FC_REFLECT( steemit::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) );

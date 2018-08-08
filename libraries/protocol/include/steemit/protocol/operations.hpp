@@ -17,9 +17,6 @@ namespace steemit { namespace protocol {
             transfer_to_vesting_operation,
             withdraw_vesting_operation,
 
-            limit_order_create_operation,
-            limit_order_cancel_operation,
-
             feed_publish_operation,
             convert_operation,
 
@@ -40,7 +37,6 @@ namespace steemit { namespace protocol {
             custom_json_operation,
             comment_options_operation,
             set_withdraw_vesting_route_operation,
-            limit_order_create2_operation,
             challenge_authority_operation,
             prove_authority_operation,
             request_account_recovery_operation,
@@ -69,7 +65,6 @@ namespace steemit { namespace protocol {
             comment_reward_operation,
             interest_operation,
             fill_vesting_withdraw_operation,
-            fill_order_operation,
             shutdown_witness_operation,
             fill_transfer_from_savings_operation,
             hardfork_operation,

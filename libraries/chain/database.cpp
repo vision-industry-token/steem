@@ -411,16 +411,6 @@ const escrow_object* database::find_escrow( const account_name_type& name, uint3
    return find< escrow_object, by_from_id >( boost::make_tuple( name, escrow_id ) );
 }
 
-const limit_order_object& database::get_limit_order( const account_name_type& name, uint32_t orderid )const
-{ try {
-   return get< limit_order_object, by_account >( boost::make_tuple( name, orderid ) );
-} FC_CAPTURE_AND_RETHROW( (name)(orderid) ) }
-
-const limit_order_object* database::find_limit_order( const account_name_type& name, uint32_t orderid )const
-{
-   return find< limit_order_object, by_account >( boost::make_tuple( name, orderid ) );
-}
-
 const savings_withdraw_object& database::get_savings_withdraw( const account_name_type& owner, uint32_t request_id )const
 { try {
    return get< savings_withdraw_object, by_from_rid >( boost::make_tuple( owner, request_id ) );
@@ -2056,9 +2046,6 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< report_over_production_evaluator         >();
    _my->_evaluator_registry.register_evaluator< feed_publish_evaluator                   >();
    _my->_evaluator_registry.register_evaluator< convert_evaluator                        >();
-   _my->_evaluator_registry.register_evaluator< limit_order_create_evaluator             >();
-   _my->_evaluator_registry.register_evaluator< limit_order_create2_evaluator            >();
-   _my->_evaluator_registry.register_evaluator< limit_order_cancel_evaluator             >();
    _my->_evaluator_registry.register_evaluator< challenge_authority_evaluator            >();
    _my->_evaluator_registry.register_evaluator< prove_authority_evaluator                >();
    _my->_evaluator_registry.register_evaluator< request_account_recovery_evaluator       >();
@@ -2620,7 +2607,6 @@ void database::_apply_block( const signed_block& next_block )
 
    create_block_summary(next_block);
    clear_expired_transactions();
-   clear_expired_orders();
    clear_expired_delegations();
    update_witness_schedule(*this);
 
@@ -3062,18 +3048,6 @@ void database::clear_expired_transactions()
       remove( *dedupe_index.begin() );
 }
 
-void database::clear_expired_orders()
-{
-   auto now = head_block_time();
-   const auto& orders_by_exp = get_index<limit_order_index>().indices().get<by_expiration>();
-   auto itr = orders_by_exp.begin();
-   while( itr != orders_by_exp.end() && itr->expiration < now )
-   {
-      cancel_order( *itr );
-      itr = orders_by_exp.begin();
-   }
-}
-
 void database::clear_expired_delegations()
 {
    auto now = head_block_time();
@@ -3383,19 +3357,6 @@ void database::validate_invariants()const
             FC_ASSERT( false, "Encountered illegal symbol in convert_request_object" );
       }
 
-      const auto& limit_order_idx = get_index< limit_order_index >().indices();
-
-      for( auto itr = limit_order_idx.begin(); itr != limit_order_idx.end(); ++itr )
-      {
-         if( itr->sell_price.base.symbol == STEEM_SYMBOL )
-         {
-            total_supply += asset( itr->for_sale, STEEM_SYMBOL );
-         }
-         else if ( itr->sell_price.base.symbol == SBD_SYMBOL )
-         {
-            total_sbd += asset( itr->for_sale, SBD_SYMBOL );
-         }
-      }
 
       const auto& escrow_idx = get_index< escrow_index >().indices().get< by_id >();
 
