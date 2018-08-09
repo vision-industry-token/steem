@@ -73,8 +73,6 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
    {
       BOOST_TEST_MESSAGE( "Testing: account_create_apply" );
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
-
       signed_transaction tx;
       private_key_type priv_key = generate_private_key( "alice" );
 
@@ -607,8 +605,6 @@ BOOST_AUTO_TEST_CASE( comment_delete_apply )
       vest( "alice", ASSET( "1000.000 TESTS" ) );
 
       generate_block();
-
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       signed_transaction tx;
       comment_operation comment;
@@ -4968,8 +4964,6 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_apply )
       ACTORS( (alice) )
       generate_block();
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
-
       db_plugin->debug_update( []( database& db )
       {
          db.modify( db.get_account( "alice" ), []( account_object& a )
@@ -5456,8 +5450,6 @@ BOOST_AUTO_TEST_CASE( comment_beneficiaries_apply )
       BOOST_TEST_MESSAGE( "Test Comment Beneficiaries" );
       ACTORS( (alice)(bob)(sam)(dave) )
       generate_block();
-
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       comment_operation comment;
       vote_operation vote;

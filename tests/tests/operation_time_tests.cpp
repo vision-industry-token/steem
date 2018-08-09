@@ -68,9 +68,6 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
       // A,B,D : posters
       // U,V,W : voters
 
-      // set a ridiculously high STEEM price ($1 / satoshi) to disable dust threshold
-      set_price_feed( price( ASSET( "0.001 TESTS" ), ASSET( "1.000 TBD" ) ) );
-
       for( const auto& voter : voters )
       {
          fund( voter.name, 10000 );
@@ -165,8 +162,6 @@ BOOST_AUTO_TEST_CASE( comment_payout_dust )
       vest( "alice", ASSET( "10.000 TESTS" ) );
       vest( "bob", ASSET( "10.000 TESTS" ) );
 
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
-
       generate_block();
       validate_database();
 
@@ -224,8 +219,6 @@ BOOST_AUTO_TEST_CASE( reward_funds )
 
       ACTORS( (alice)(bob) )
       generate_block();
-
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
       generate_block();
 
       comment_operation comment;
@@ -296,8 +289,6 @@ BOOST_AUTO_TEST_CASE( recent_claims_decay )
       BOOST_TEST_MESSAGE( "Testing: recent_rshares_2decay" );
       ACTORS( (alice)(bob) )
       generate_block();
-
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
       generate_block();
 
       comment_operation comment;
@@ -385,9 +376,6 @@ BOOST_AUTO_TEST_CASE( recent_claims_decay )
       vest( "sam", 8000 );
       fund( "dave", 5000 );
       vest( "dave", 5000 );
-
-      price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
-      set_price_feed( exchange_rate );
 
       signed_transaction tx;
 
@@ -553,9 +541,6 @@ BOOST_AUTO_TEST_CASE( comment_payout )
       vest( "sam", 8000 );
       fund( "dave", 5000 );
       vest( "dave", 5000 );
-
-      price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
-      set_price_feed( exchange_rate );
 
       auto gpo = db.get_dynamic_global_properties();
 
@@ -866,9 +851,6 @@ BOOST_AUTO_TEST_CASE( nested_comments )
       vest( "sam", 10000 );
       fund( "dave", 10000 );
       vest( "dave", 10000 );
-
-      price exchange_rate( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) );
-      set_price_feed( exchange_rate );
 
       signed_transaction tx;
       comment_operation comment_op;
@@ -1604,8 +1586,6 @@ BOOST_AUTO_TEST_CASE( sbd_interest )
       vest( "alice", ASSET( "10.000 TESTS" ) );
       vest( "bob", ASSET( "10.000 TESTS" ) );
 
-      set_price_feed( price( asset::from_string( "1.000 TESTS" ), asset::from_string( "1.000 TBD" ) ) );
-
       BOOST_TEST_MESSAGE( "Testing interest over smallest interest period" );
 
       signed_transaction tx;
@@ -1771,9 +1751,6 @@ BOOST_AUTO_TEST_CASE( comment_freeze )
       vest( "sam", 10000 );
       vest( "dave", 10000 );
 
-      auto exchange_rate = price( ASSET( "1.250 TESTS" ), ASSET( "1.000 TBD" ) );
-      set_price_feed( exchange_rate );
-
       signed_transaction tx;
 
       comment_operation comment;
@@ -1883,8 +1860,6 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
 
       ACTORS( (alice) );
       generate_block();
-
-      set_price_feed( price( ASSET( "1.000 TESTS" ), ASSET( "1.000 TBD" ) ) );
 
       fund( "alice", ASSET( "10.000 TESTS" ) );
       fund( "alice", ASSET( "10.000 TBD" ) );
