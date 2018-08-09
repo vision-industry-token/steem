@@ -125,11 +125,12 @@
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
 #define STEEMIT_DEFAULT_SBD_INTEREST_RATE       (10*STEEMIT_1_PERCENT) ///< 10% APR
 
-#define STEEMIT_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
+#define STEEMIT_INFLATION_RATE_START_PERCENT    (978)
 #define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
-#define STEEMIT_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define STEEMIT_CONTENT_REWARD_PERCENT          (75*STEEMIT_1_PERCENT) //75% of inflation, 7.125% inflation
+#define STEEMIT_INFLATION_NARROWING_PERIOD      (125000) // Narrow 0.01% every 125k blocks
+#define STEEMIT_CONTENT_REWARD_PERCENT          (7275) //72.75% of inflation
 #define STEEMIT_VESTING_FUND_PERCENT            (15*STEEMIT_1_PERCENT) //15% of inflation, 1.425% inflation
+#define STEEMIT_HOSTING_PERCENT                 (225) //2.25% of inflation for partners hosting content
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
 #define STEEMIT_MIN_RATION                      100000
@@ -229,3 +230,6 @@
 /// Represents the canonical root post parent account
 #define STEEMIT_ROOT_POST_PARENT                (account_name_type())
 ///@}
+
+
+#define STEEMIT_HOSTING_ACCOUNT                   "hosting"

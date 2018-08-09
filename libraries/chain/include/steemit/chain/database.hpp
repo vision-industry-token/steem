@@ -284,7 +284,7 @@ namespace steemit { namespace chain {
          /** @return the sbd created and deposited to_account, may return STEEM if there is no median feed */
          std::pair< asset, asset > create_sbd( const account_object& to_account, asset steem, bool to_reward_balance=false );
          asset create_vesting( const account_object& to_account, asset steem, bool to_reward_balance=false );
-         void adjust_total_payout( const comment_object& a, const asset& sbd, const asset& curator_sbd_value, const asset& beneficiary_value );
+         void adjust_total_payout( const comment_object& a, const asset& payout, const asset& curator, const asset& beneficiary_value );
 
          void        adjust_balance( const account_object& a, const asset& delta );
          void        adjust_savings_balance( const account_object& a, const asset& delta );
