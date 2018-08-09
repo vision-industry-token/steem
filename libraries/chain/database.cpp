@@ -2880,35 +2880,6 @@ void database::adjust_balance( const account_object& a, const asset& delta )
          case STEEM_SYMBOL:
             acnt.balance += delta;
             break;
-//         case SBD_SYMBOL:
-//            if( a.sbd_seconds_last_update != head_block_time() )
-//            {
-//               acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) * (head_block_time() - a.sbd_seconds_last_update).to_seconds();
-//               acnt.sbd_seconds_last_update = head_block_time();
-//
-//               if( acnt.sbd_seconds > 0 &&
-//                   (acnt.sbd_seconds_last_update - acnt.sbd_last_interest_payment).to_seconds() > STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
-//               {
-//                  auto interest = acnt.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
-//                  interest *= get_dynamic_global_properties().sbd_interest_rate;
-//                  interest /= STEEMIT_100_PERCENT;
-//                  asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-//                  acnt.sbd_balance += interest_paid;
-//                  acnt.sbd_seconds = 0;
-//                  acnt.sbd_last_interest_payment = head_block_time();
-//
-//                  if(interest > 0)
-//                     push_virtual_operation( interest_operation( a.name, interest_paid ) );
-//
-//                  modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& props)
-//                  {
-//                     props.current_sbd_supply += interest_paid;
-//                     props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-//                  } );
-//               }
-//            }
-//            acnt.sbd_balance += delta;
-//            break;
          default:
             FC_ASSERT( false, "invalid symbol" );
       }
@@ -2924,35 +2895,6 @@ void database::adjust_savings_balance( const account_object& a, const asset& del
       {
          case STEEM_SYMBOL:
             acnt.savings_balance += delta;
-            break;
-         case SBD_SYMBOL:
-            if( a.savings_sbd_seconds_last_update != head_block_time() )
-            {
-               acnt.savings_sbd_seconds += fc::uint128_t(a.savings_sbd_balance.amount.value) * (head_block_time() - a.savings_sbd_seconds_last_update).to_seconds();
-               acnt.savings_sbd_seconds_last_update = head_block_time();
-
-               if( acnt.savings_sbd_seconds > 0 &&
-                   (acnt.savings_sbd_seconds_last_update - acnt.savings_sbd_last_interest_payment).to_seconds() > STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
-               {
-                  auto interest = acnt.savings_sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
-                  interest *= get_dynamic_global_properties().sbd_interest_rate;
-                  interest /= STEEMIT_100_PERCENT;
-                  asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                  acnt.savings_sbd_balance += interest_paid;
-                  acnt.savings_sbd_seconds = 0;
-                  acnt.savings_sbd_last_interest_payment = head_block_time();
-
-                  if(interest > 0)
-                     push_virtual_operation( interest_operation( a.name, interest_paid ) );
-
-//                  modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& props)
-//                  {
-//                     props.current_sbd_supply += interest_paid;
-//                     props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-//                  } );
-               }
-            }
-            acnt.savings_sbd_balance += delta;
             break;
          default:
             FC_ASSERT( !"invalid symbol" );
@@ -3117,7 +3059,6 @@ void database::validate_invariants()const
    {
       const auto& account_idx = get_index<account_index>().indices().get<by_name>();
       asset total_supply = asset( 0, STEEM_SYMBOL );
-//      asset total_sbd = asset( 0, SBD_SYMBOL );
       asset total_vesting = asset( 0, VESTS_SYMBOL );
       asset pending_vesting_steem = asset( 0, STEEM_SYMBOL );
       share_type total_vsf_votes = share_type( 0 );
@@ -3134,9 +3075,6 @@ void database::validate_invariants()const
          total_supply += itr->balance;
          total_supply += itr->savings_balance;
          total_supply += itr->reward_steem_balance;
-//         total_sbd += itr->sbd_balance;
-//         total_sbd += itr->savings_sbd_balance;
-//         total_sbd += itr->reward_sbd_balance;
          total_vesting += itr->vesting_shares;
          total_vesting += itr->reward_vesting_balance;
          pending_vesting_steem += itr->reward_vesting_steem;
@@ -3152,12 +3090,9 @@ void database::validate_invariants()const
       for( auto itr = escrow_idx.begin(); itr != escrow_idx.end(); ++itr )
       {
          total_supply += itr->steem_balance;
-//         total_sbd += itr->sbd_balance;
 
          if( itr->pending_fee.symbol == STEEM_SYMBOL )
             total_supply += itr->pending_fee;
-//         else if( itr->pending_fee.symbol == SBD_SYMBOL )
-//            total_sbd += itr->pending_fee;
          else
             FC_ASSERT( false, "found escrow pending fee that is not SBD or STEEM" );
       }
@@ -3168,10 +3103,8 @@ void database::validate_invariants()const
       {
          if( itr->amount.symbol == STEEM_SYMBOL )
             total_supply += itr->amount;
-//         else if( itr->amount.symbol == SBD_SYMBOL )
-//            total_sbd += itr->amount;
          else
-            FC_ASSERT( false, "found savings withdraw that is not SBD or STEEM" );
+            FC_ASSERT( false, "found savings withdraw that is not STEEM" );
       }
       fc::uint128_t total_rshares2;
 

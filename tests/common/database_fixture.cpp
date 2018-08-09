@@ -331,30 +331,13 @@ void database_fixture::fund(
          {
             if( amount.symbol == STEEM_SYMBOL )
                a.balance += amount;
-            else if( amount.symbol == SBD_SYMBOL )
-            {
-               a.sbd_balance += amount;
-               a.sbd_seconds_last_update = db.head_block_time();
-            }
          });
 
          db.modify( db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
          {
             if( amount.symbol == STEEM_SYMBOL )
                gpo.current_supply += amount;
-//            else if( amount.symbol == SBD_SYMBOL )
-//               gpo.current_sbd_supply += amount;
          });
-
-//         if( amount.symbol == SBD_SYMBOL )
-//         {
-//            const auto& median_feed = db.get_feed_history();
-//            if( median_feed.current_median_history.is_null() )
-//               db.modify( median_feed, [&]( feed_history_object& f )
-//               {
-//                  f.current_median_history = price( asset( 1, SBD_SYMBOL ), asset( 1, STEEM_SYMBOL ) );
-//               });
-//         }
 
          db.update_virtual_supply();
       }, default_skip );
