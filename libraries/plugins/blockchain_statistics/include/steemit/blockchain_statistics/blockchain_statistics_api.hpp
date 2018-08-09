@@ -59,7 +59,6 @@ struct statistics
    uint32_t             finished_vesting_withdrawals = 0;            ///< Processed vesting withdrawals that are now finished
    share_type           vests_withdrawn = 0;                         ///< Ammount of VESTS withdrawn to STEEM
    share_type           vests_transferred = 0;                       ///< Ammount of VESTS transferred to another account
-   share_type           steem_converted = 0;                         ///< Amount of STEEM that was converted
 
    statistics& operator += ( const bucket_object& b );
 };
@@ -141,7 +140,6 @@ FC_REFLECT( steemit::blockchain_statistics::statistics,
    (finished_vesting_withdrawals)
    (vests_withdrawn)
    (vests_transferred)
-   (steem_converted)
 
 
 FC_API( steemit::blockchain_statistics::blockchain_statistics_api,
