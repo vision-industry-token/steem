@@ -90,7 +90,6 @@ struct account_stats_bucket_object : public object< account_stats_bucket_object_
    share_type           steem_received_from_withdrawls = 0;       ///< STEEM received from this account's vesting withdrawals
    share_type           steem_received_from_routes = 0;           ///< STEEM received from another account's vesting withdrawals
    share_type           vests_received_from_routes = 0;           ///< VESTS received from another account's vesting withdrawals
-   share_type           steem_converted = 0;                      ///< Amount of STEEM that was converted
    uint32_t             total_pow = 0;                            ///< POW completed
    uint128_t            estimated_hashpower = 0;                  ///< Estimated hashpower
 };
@@ -196,7 +195,6 @@ FC_REFLECT( steemit::account_statistics::account_stats_bucket_object,
    (steem_received_from_withdrawls)
    (steem_received_from_routes)
    (vests_received_from_routes)
-   (steem_converted)
    (total_pow)
    (estimated_hashpower)
 )
