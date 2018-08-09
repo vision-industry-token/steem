@@ -1666,8 +1666,7 @@ void database::process_comment_cashout()
  *
  * reward allocation:
  *  - 15% vesting
- *  - 72.75% content
- *  - 2.25% partners
+ *  - 75 content
  *  - 10% witnesses
  */
 void database::process_funds()
@@ -1686,8 +1685,7 @@ void database::process_funds()
    auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
    content_reward = pay_reward_funds( content_reward ); /// 72.75% to content creator
    auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
-   auto hosting_reward = ( new_steem * STEEMIT_HOSTING_PERCENT ) / STEEMIT_100_PERCENT; /// 2.25% partners hosting content
-   auto witness_reward = new_steem - content_reward - vesting_reward - hosting_reward; /// Remaining 10% to witness pay
+   auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
    const auto& cwit = get_witness( props.current_witness );
    witness_reward *= STEEMIT_MAX_WITNESSES;
@@ -1703,7 +1701,7 @@ void database::process_funds()
 
    witness_reward /= wso.witness_pay_normalization_factor;
 
-   new_steem = content_reward + vesting_reward + witness_reward + hosting_reward;
+   new_steem = content_reward + vesting_reward + witness_reward;
 
    modify( props, [&]( dynamic_global_property_object& p )
    {
@@ -1714,13 +1712,6 @@ void database::process_funds()
 
    const auto& producer_reward = create_vesting( get_account( cwit.owner ), asset( witness_reward, STEEM_SYMBOL ) );
    push_virtual_operation( producer_reward_operation( cwit.owner, producer_reward ) );
-
-
-   /// need virtual operation?
-   modify( get_account( STEEMIT_HOSTING_ACCOUNT ), [&]( account_object& a )
-   {
-       a.balance += hosting_reward;
-   });
 }
 
 void database::process_savings_withdraws()
@@ -2115,24 +2106,6 @@ void database::init_genesis( uint64_t init_supply )
             w.schedule = witness_object::miner;
          } );
       }
-
-      ///////////////////
-      /// account `hosting` holds fund for partners hosting content
-      create< account_object >( [&]( account_object& a )
-      {
-         a.name = STEEMIT_HOSTING_ACCOUNT;
-         a.memo_key = init_public_key;
-         a.balance  = asset( 0, STEEM_SYMBOL );
-      } );
-
-      create< account_authority_object >( [&]( account_authority_object& auth )
-      {
-         auth.account = STEEMIT_HOSTING_ACCOUNT;
-         auth.owner.add_authority( init_public_key, 1 );
-         auth.owner.weight_threshold = 1;
-         auth.active  = auth.owner;
-         auth.posting = auth.active;
-      });
 
       create< dynamic_global_property_object >( [&]( dynamic_global_property_object& p )
       {

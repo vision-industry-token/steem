@@ -128,9 +128,8 @@
 #define STEEMIT_INFLATION_RATE_START_PERCENT    (978)
 #define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
 #define STEEMIT_INFLATION_NARROWING_PERIOD      (125000) // Narrow 0.01% every 125k blocks
-#define STEEMIT_CONTENT_REWARD_PERCENT          (7275) //72.75% of inflation
+#define STEEMIT_CONTENT_REWARD_PERCENT          (75*STEEMIT_1_PERCENT) //75% of inflation
 #define STEEMIT_VESTING_FUND_PERCENT            (15*STEEMIT_1_PERCENT) //15% of inflation, 1.425% inflation
-#define STEEMIT_HOSTING_PERCENT                 (225) //2.25% of inflation for partners hosting content
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
 #define STEEMIT_MIN_RATION                      100000
@@ -191,9 +190,6 @@
 #define STEEMIT_MAX_BLOCK_SIZE                  (STEEMIT_MAX_TRANSACTION_SIZE*STEEMIT_BLOCK_INTERVAL*2000)
 #define STEEMIT_MIN_BLOCK_SIZE                  115
 #define STEEMIT_BLOCKS_PER_HOUR                 (60*60/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_FEED_INTERVAL_BLOCKS            (STEEMIT_BLOCKS_PER_HOUR)
-#define STEEMIT_MAX_FEED_AGE_SECONDS            (60*60*24*7) // 7 days
-#define STEEMIT_MIN_FEEDS                       (STEEMIT_MAX_WITNESSES/3) /// protects the network from conversions before price has been established
 
 #define STEEMIT_MIN_UNDO_HISTORY                10
 #define STEEMIT_MAX_UNDO_HISTORY                10000
@@ -229,5 +225,3 @@
 #define STEEMIT_ROOT_POST_PARENT                (account_name_type())
 ///@}
 
-
-#define STEEMIT_HOSTING_ACCOUNT                   "hosting"

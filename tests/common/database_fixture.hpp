@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-#define INITIAL_TEST_SUPPLY (4000000000000ll) // 10000000000ll
+#define INITIAL_TEST_SUPPLY (10000000000ll) // 10000000000ll 4000000000000ll
 using namespace graphene::db;
 
 extern uint32_t ( STEEMIT_TESTING_GENESIS_TIMESTAMP );
