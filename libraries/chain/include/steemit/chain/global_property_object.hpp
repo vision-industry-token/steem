@@ -39,11 +39,6 @@ namespace steemit { namespace chain {
 
 
          /**
-          *  The total POW accumulated, aka the sum of num_pow_witness at the time new POW is added
-          */
-         uint64_t total_pow = -1;
-
-         /**
           * The current count of how many pending POW witnesses there are, determines the difficulty
           * of doing pow
           */
@@ -135,7 +130,6 @@ FC_REFLECT( steemit::chain::dynamic_global_property_object,
              (head_block_id)
              (time)
              (current_witness)
-             (total_pow)
              (num_pow_witnesses)
              (virtual_supply)
              (current_supply)

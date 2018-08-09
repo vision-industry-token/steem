@@ -90,10 +90,6 @@ class debug_node_plugin : public steemit::app::plugin
       void save_debug_updates( fc::mutable_variant_object& target );
       void load_debug_updates( const fc::variant_object& target );
 
-      void debug_mine_work(
-         uint32_t summary_target
-         );
-
       bool logging = true;
 
    private:
