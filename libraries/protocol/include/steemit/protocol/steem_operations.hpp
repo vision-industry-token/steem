@@ -381,8 +381,7 @@ namespace steemit { namespace protocol {
        *  fee requires all accounts to have some kind of commitment to the network that includes the
        *  ability to vote and make transactions.
        */
-      asset             account_creation_fee =
-         asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL );
+      asset             account_creation_fee = asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL );
 
       /**
        *  This witnesses vote for the maximum_block_size which is used by the network
@@ -531,17 +530,6 @@ namespace steemit { namespace protocol {
 
       void  validate()const;
       void  get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
-   };
-
-   struct pow
-   {
-      public_key_type worker;
-      digest_type     input;
-      signature_type  signature;
-      digest_type     work;
-
-      void create( const fc::ecc::private_key& w, const digest_type& i );
-      void validate()const;
    };
 
    /**
@@ -817,10 +805,7 @@ FC_REFLECT( steemit::protocol::set_reset_account_operation, (account)(current_re
 FC_REFLECT( steemit::protocol::report_over_production_operation, (reporter)(first_block)(second_block) )
 FC_REFLECT( steemit::protocol::convert_operation, (owner)(requestid)(amount) )
 FC_REFLECT( steemit::protocol::feed_publish_operation, (publisher)(exchange_rate) )
-FC_REFLECT( steemit::protocol::pow, (worker)(input)(signature)(work) )
-FC_REFLECT( steemit::protocol::pow2, (input)(pow_summary) )
-FC_REFLECT( steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce) )
-FC_REFLECT( steemit::protocol::equihash_pow, (input)(proof)(prev_block)(pow_summary) )
+
 FC_REFLECT( steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) );
 
 FC_REFLECT( steemit::protocol::account_create_operation,
