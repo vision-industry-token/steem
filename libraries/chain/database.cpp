@@ -16,10 +16,8 @@
 #include <steemit/chain/operation_notification.hpp>
 #include <steemit/chain/witness_schedule.hpp>
 
-#include <steemit/chain/util/asset.hpp>
 #include <steemit/chain/util/reward.hpp>
 #include <steemit/chain/util/uint256.hpp>
-#include <steemit/chain/util/reward.hpp>
 
 #include <fc/smart_ref_impl.hpp>
 #include <fc/uint128.hpp>
@@ -1470,7 +1468,7 @@ void fill_comment_reward_context_local_state( util::comment_reward_context& ctx,
 {
    ctx.rshares = comment.net_rshares;
    ctx.reward_weight = comment.reward_weight;
-   ctx.max_sbd = comment.max_accepted_payout;
+   ctx.max_payout = comment.max_accepted_payout;
 }
 
 share_type database::cashout_comment_helper( util::comment_reward_context& ctx, const comment_object& comment )

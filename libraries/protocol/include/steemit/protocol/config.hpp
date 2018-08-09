@@ -166,7 +166,7 @@
 #define STEEMIT_RECENT_RSHARES_DECAY_RATE_HF19  (fc::days(15))
 #define STEEMIT_CONTENT_CONSTANT_HF0            (uint128_t(uint64_t(2000000000000ll)))
 
-#define STEEMIT_MIN_PAYOUT_SBD                  (asset(20,SBD_SYMBOL))
+#define STEEMIT_MIN_PAYOUT                      (asset(20,STEEM_SYMBOL))
 
 #define STEEMIT_SBD_STOP_PERCENT                (5*STEEMIT_1_PERCENT ) // Stop printing SBD at 5% Market Cap
 #define STEEMIT_SBD_START_PERCENT               (2*STEEMIT_1_PERCENT) // Start reducing printing of SBD at 2% Market Cap
