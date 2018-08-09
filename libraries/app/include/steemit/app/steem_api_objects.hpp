@@ -166,7 +166,6 @@ struct account_api_obj
       last_vote_time( a.last_vote_time ),
       balance( a.balance ),
       savings_balance( a.savings_balance ),
-      sbd_balance( a.sbd_balance ),
       sbd_seconds( a.sbd_seconds ),
       sbd_seconds_last_update( a.sbd_seconds_last_update ),
       sbd_last_interest_payment( a.sbd_last_interest_payment ),
@@ -262,7 +261,6 @@ struct account_api_obj
    asset             balance;
    asset             savings_balance;
 
-   asset             sbd_balance;
    uint128_t         sbd_seconds;
    time_point_sec    sbd_seconds_last_update;
    time_point_sec    sbd_last_interest_payment;
@@ -485,7 +483,7 @@ FC_REFLECT( steemit::app::account_api_obj,
              (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
              (savings_balance)
-             (sbd_balance)(sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
+             (sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
              (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
              (reward_sbd_balance)(reward_steem_balance)(reward_vesting_balance)(reward_vesting_steem)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
