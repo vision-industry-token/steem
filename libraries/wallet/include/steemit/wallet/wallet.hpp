@@ -759,25 +759,6 @@ class wallet_api
        */
       annotated_signed_transaction set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
 
-      /**
-       *  This method will convert SBD to STEEM at the current_median_history price one
-       *  week from the time it is executed. This method depends upon there being a valid price feed.
-       *
-       *  @param from The account requesting conversion of its SBD i.e. "1.000 SBD"
-       *  @param amount The amount of SBD to convert
-       *  @param broadcast true if you wish to broadcast the transaction
-       */
-      annotated_signed_transaction convert_sbd( string from, asset amount, bool broadcast = false );
-
-      /**
-       * A witness can public a price feed for the STEEM:SBD market. The median price feed is used
-       * to process conversion requests from SBD to STEEM.
-       *
-       * @param witness The witness publishing the price feed
-       * @param exchange_rate The desired exchange rate
-       * @param broadcast true if you wish to broadcast the transaction
-       */
-      annotated_signed_transaction publish_feed(string witness, price exchange_rate, bool broadcast );
 
       /** Signs a transaction.
        *
@@ -1019,8 +1000,6 @@ FC_API( steemit::wallet::wallet_api,
         (transfer_to_vesting)
         (withdraw_vesting)
         (set_withdraw_vesting_route)
-        (convert_sbd)
-        (publish_feed)
         (post_comment)
         (vote)
         (set_transaction_expiration)

@@ -1341,37 +1341,6 @@ void custom_binary_evaluator::do_apply( const custom_binary_operation& o )
    }
 }
 
-void feed_publish_evaluator::do_apply( const feed_publish_operation& o )
-{
-  const auto& witness = _db.get_witness( o.publisher );
-  _db.modify( witness, [&]( witness_object& w ){
-      w.sbd_exchange_rate = o.exchange_rate;
-      w.last_sbd_exchange_update = _db.head_block_time();
-  });
-}
-
-void convert_evaluator::do_apply( const convert_operation& o )
-{
-  const auto& owner = _db.get_account( o.owner );
-  FC_ASSERT( _db.get_balance( owner, o.amount.symbol ) >= o.amount, "Account does not have sufficient balance for conversion." );
-
-  _db.adjust_balance( owner, -o.amount );
-
-  const auto& fhistory = _db.get_feed_history();
-  FC_ASSERT( !fhistory.current_median_history.is_null(), "Cannot convert SBD because there is no price feed." );
-
-  auto steemit_conversion_delay = STEEMIT_CONVERSION_DELAY;
-
-  _db.create<convert_request_object>( [&]( convert_request_object& obj )
-  {
-      obj.owner           = o.owner;
-      obj.requestid       = o.requestid;
-      obj.amount          = o.amount;
-      obj.conversion_date = _db.head_block_time() + steemit_conversion_delay;
-  });
-
-}
-
 void report_over_production_evaluator::do_apply( const report_over_production_operation& o )
 {
    FC_ASSERT( false, "report_over_production_operation is disabled." );

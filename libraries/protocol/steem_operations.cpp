@@ -226,23 +226,6 @@ namespace steemit { namespace protocol {
       for( const auto& a : required_auths ) a.validate();
    }
 
-   void feed_publish_operation::validate()const
-   {
-      validate_account_name( publisher );
-      FC_ASSERT( ( is_asset_type( exchange_rate.base, STEEM_SYMBOL ) && is_asset_type( exchange_rate.quote, SBD_SYMBOL ) )
-         || ( is_asset_type( exchange_rate.base, SBD_SYMBOL ) && is_asset_type( exchange_rate.quote, STEEM_SYMBOL ) ),
-         "Price feed must be a STEEM/SBD price" );
-      exchange_rate.validate();
-   }
-
-   void convert_operation::validate()const
-   {
-      validate_account_name( owner );
-      /// only allow conversion from SBD to STEEM, allowing the opposite can enable traders to abuse
-      /// market fluxuations through converting large quantities without moving the price.
-      FC_ASSERT( is_asset_type( amount, SBD_SYMBOL ), "Can only convert SBD to STEEM" );
-      FC_ASSERT( amount.amount > 0, "Must convert some SBD" );
-   }
 
    void report_over_production_operation::validate()const
    {

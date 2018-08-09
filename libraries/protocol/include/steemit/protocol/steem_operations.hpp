@@ -505,34 +505,6 @@ namespace steemit { namespace protocol {
 
 
    /**
-    *  Feeds can only be published by the top N witnesses which are included in every round and are
-    *  used to define the exchange rate between steem and the dollar.
-    */
-   struct feed_publish_operation : public base_operation
-   {
-      account_name_type publisher;
-      price             exchange_rate;
-
-      void  validate()const;
-      void  get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(publisher); }
-   };
-
-
-   /**
-    *  This operation instructs the blockchain to start a conversion between STEEM and SBD,
-    *  The funds are deposited after STEEMIT_CONVERSION_DELAY
-    */
-   struct convert_operation : public base_operation
-   {
-      account_name_type owner;
-      uint32_t          requestid = 0;
-      asset             amount;
-
-      void  validate()const;
-      void  get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
-   };
-
-   /**
     * This operation is used to report a miner who signs two blocks
     * at the same time. To be valid, the violation must be reported within
     * STEEMIT_MAX_WITNESSES blocks of the head block (1 round) and the
@@ -803,8 +775,6 @@ FC_REFLECT( steemit::protocol::set_reset_account_operation, (account)(current_re
 
 
 FC_REFLECT( steemit::protocol::report_over_production_operation, (reporter)(first_block)(second_block) )
-FC_REFLECT( steemit::protocol::convert_operation, (owner)(requestid)(amount) )
-FC_REFLECT( steemit::protocol::feed_publish_operation, (publisher)(exchange_rate) )
 
 FC_REFLECT( steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) );
 

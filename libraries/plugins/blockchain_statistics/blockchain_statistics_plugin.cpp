@@ -169,15 +169,6 @@ struct operation_process
       });
    }
 
-   void operator()( const convert_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.sbd_conversion_requests_created++;
-         b.sbd_to_be_converted += op.amount.amount;
-      });
-   }
-
    void operator()( const fill_convert_request_operation& op )const
    {
       _db.modify( _bucket, [&]( bucket_object& b )

@@ -1845,9 +1845,8 @@ void database::process_conversions()
    modify( props, [&]( dynamic_global_property_object& p )
    {
        p.current_supply += net_steem;
-       p.current_sbd_supply -= net_sbd;
        p.virtual_supply += net_steem;
-       p.virtual_supply -= net_sbd * get_feed_history().current_median_history;
+//       p.virtual_supply -= net_sbd * get_feed_history().current_median_history;
    } );
 }
 
@@ -1991,8 +1990,6 @@ void database::initialize_evaluators()
    _my->_evaluator_registry.register_evaluator< custom_binary_evaluator                  >();
    _my->_evaluator_registry.register_evaluator< custom_json_evaluator                    >();
    _my->_evaluator_registry.register_evaluator< report_over_production_evaluator         >();
-   _my->_evaluator_registry.register_evaluator< feed_publish_evaluator                   >();
-   _my->_evaluator_registry.register_evaluator< convert_evaluator                        >();
    _my->_evaluator_registry.register_evaluator< challenge_authority_evaluator            >();
    _my->_evaluator_registry.register_evaluator< prove_authority_evaluator                >();
    _my->_evaluator_registry.register_evaluator< request_account_recovery_evaluator       >();
@@ -2652,60 +2649,60 @@ void database::process_header_extensions( const signed_block& next_block )
 
 void database::update_median_feed() {
 try {
-   if( (head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0 )
-      return;
-
-   auto now = head_block_time();
-   const witness_schedule_object& wso = get_witness_schedule_object();
-   vector<price> feeds; feeds.reserve( wso.num_scheduled_witnesses );
-   for( int i = 0; i < wso.num_scheduled_witnesses; i++ )
-   {
-      const auto& wit = get_witness( wso.current_shuffled_witnesses[i] );
-
-      if( now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE_SECONDS && !wit.sbd_exchange_rate.is_null() )
-      {
-         feeds.push_back( wit.sbd_exchange_rate );
-      }
-   }
-
-   if( feeds.size() >= STEEMIT_MIN_FEEDS )
-   {
-      std::sort( feeds.begin(), feeds.end() );
-      auto median_feed = feeds[feeds.size()/2];
-
-      modify( get_feed_history(), [&]( feed_history_object& fho )
-      {
-         fho.price_history.push_back( median_feed );
-         size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
-
-         if( fho.price_history.size() > steemit_feed_history_window )
-            fho.price_history.pop_front();
-
-         if( fho.price_history.size() )
-         {
-            std::deque< price > copy;
-            for( auto i : fho.price_history )
-            {
-               copy.push_back( i );
-            }
-
-            std::sort( copy.begin(), copy.end() ); /// TODO: use nth_item
-            fho.current_median_history = copy[copy.size()/2];
-
-#ifdef IS_TEST_NET
-            if( skip_price_feed_limit_check )
-               return;
-#endif
-
-            const auto& gpo = get_dynamic_global_properties();
-            price min_price( asset( 9 * gpo.current_sbd_supply.amount, SBD_SYMBOL ), gpo.current_supply ); // This price limits SBD to 10% market cap
-
-            if( min_price > fho.current_median_history )
-               fho.current_median_history = min_price;
-
-         }
-      });
-   }
+//   if( (head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0 )
+//      return;
+//
+//   auto now = head_block_time();
+//   const witness_schedule_object& wso = get_witness_schedule_object();
+//   vector<price> feeds; feeds.reserve( wso.num_scheduled_witnesses );
+//   for( int i = 0; i < wso.num_scheduled_witnesses; i++ )
+//   {
+//      const auto& wit = get_witness( wso.current_shuffled_witnesses[i] );
+//
+//      if( now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE_SECONDS && !wit.sbd_exchange_rate.is_null() )
+//      {
+//         feeds.push_back( wit.sbd_exchange_rate );
+//      }
+//   }
+//
+//   if( feeds.size() >= STEEMIT_MIN_FEEDS )
+//   {
+//      std::sort( feeds.begin(), feeds.end() );
+//      auto median_feed = feeds[feeds.size()/2];
+//
+//      modify( get_feed_history(), [&]( feed_history_object& fho )
+//      {
+//         fho.price_history.push_back( median_feed );
+//         size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
+//
+//         if( fho.price_history.size() > steemit_feed_history_window )
+//            fho.price_history.pop_front();
+//
+//         if( fho.price_history.size() )
+//         {
+//            std::deque< price > copy;
+//            for( auto i : fho.price_history )
+//            {
+//               copy.push_back( i );
+//            }
+//
+//            std::sort( copy.begin(), copy.end() ); /// TODO: use nth_item
+//            fho.current_median_history = copy[copy.size()/2];
+//
+//#ifdef IS_TEST_NET
+//            if( skip_price_feed_limit_check )
+//               return;
+//#endif
+//
+//            const auto& gpo = get_dynamic_global_properties();
+//            price min_price( asset( 9 * gpo.current_sbd_supply.amount, SBD_SYMBOL ), gpo.current_supply ); // This price limits SBD to 10% market cap
+//
+//            if( min_price > fho.current_median_history )
+//               fho.current_median_history = min_price;
+//
+//         }
+//      });
+//   }
 } FC_CAPTURE_AND_RETHROW() }
 
 void database::apply_transaction(const signed_transaction& trx, uint32_t skip)
@@ -3041,35 +3038,35 @@ void database::adjust_balance( const account_object& a, const asset& delta )
          case STEEM_SYMBOL:
             acnt.balance += delta;
             break;
-         case SBD_SYMBOL:
-            if( a.sbd_seconds_last_update != head_block_time() )
-            {
-               acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) * (head_block_time() - a.sbd_seconds_last_update).to_seconds();
-               acnt.sbd_seconds_last_update = head_block_time();
-
-               if( acnt.sbd_seconds > 0 &&
-                   (acnt.sbd_seconds_last_update - acnt.sbd_last_interest_payment).to_seconds() > STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
-               {
-                  auto interest = acnt.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
-                  interest *= get_dynamic_global_properties().sbd_interest_rate;
-                  interest /= STEEMIT_100_PERCENT;
-                  asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
-                  acnt.sbd_balance += interest_paid;
-                  acnt.sbd_seconds = 0;
-                  acnt.sbd_last_interest_payment = head_block_time();
-
-                  if(interest > 0)
-                     push_virtual_operation( interest_operation( a.name, interest_paid ) );
-
-                  modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& props)
-                  {
-                     props.current_sbd_supply += interest_paid;
-                     props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-                  } );
-               }
-            }
-            acnt.sbd_balance += delta;
-            break;
+//         case SBD_SYMBOL:
+//            if( a.sbd_seconds_last_update != head_block_time() )
+//            {
+//               acnt.sbd_seconds += fc::uint128_t(a.sbd_balance.amount.value) * (head_block_time() - a.sbd_seconds_last_update).to_seconds();
+//               acnt.sbd_seconds_last_update = head_block_time();
+//
+//               if( acnt.sbd_seconds > 0 &&
+//                   (acnt.sbd_seconds_last_update - acnt.sbd_last_interest_payment).to_seconds() > STEEMIT_SBD_INTEREST_COMPOUND_INTERVAL_SEC )
+//               {
+//                  auto interest = acnt.sbd_seconds / STEEMIT_SECONDS_PER_YEAR;
+//                  interest *= get_dynamic_global_properties().sbd_interest_rate;
+//                  interest /= STEEMIT_100_PERCENT;
+//                  asset interest_paid(interest.to_uint64(), SBD_SYMBOL);
+//                  acnt.sbd_balance += interest_paid;
+//                  acnt.sbd_seconds = 0;
+//                  acnt.sbd_last_interest_payment = head_block_time();
+//
+//                  if(interest > 0)
+//                     push_virtual_operation( interest_operation( a.name, interest_paid ) );
+//
+//                  modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& props)
+//                  {
+//                     props.current_sbd_supply += interest_paid;
+//                     props.virtual_supply += interest_paid * get_feed_history().current_median_history;
+//                  } );
+//               }
+//            }
+//            acnt.sbd_balance += delta;
+//            break;
          default:
             FC_ASSERT( false, "invalid symbol" );
       }
@@ -3106,11 +3103,11 @@ void database::adjust_savings_balance( const account_object& a, const asset& del
                   if(interest > 0)
                      push_virtual_operation( interest_operation( a.name, interest_paid ) );
 
-                  modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& props)
-                  {
-                     props.current_sbd_supply += interest_paid;
-                     props.virtual_supply += interest_paid * get_feed_history().current_median_history;
-                  } );
+//                  modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& props)
+//                  {
+//                     props.current_sbd_supply += interest_paid;
+//                     props.virtual_supply += interest_paid * get_feed_history().current_median_history;
+//                  } );
                }
             }
             acnt.savings_sbd_balance += delta;
@@ -3161,11 +3158,11 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
             assert( props.current_supply.amount.value >= 0 );
             break;
          }
-         case SBD_SYMBOL:
-            props.current_sbd_supply += delta;
-            props.virtual_supply = props.current_sbd_supply * get_feed_history().current_median_history + props.current_supply;
-            assert( props.current_sbd_supply.amount.value >= 0 );
-            break;
+//         case SBD_SYMBOL:
+//            props.current_sbd_supply += delta;
+//            props.virtual_supply = props.current_sbd_supply * get_feed_history().current_median_history + props.current_supply;
+//            assert( props.current_sbd_supply.amount.value >= 0 );
+//            break;
          default:
             FC_ASSERT( false, "invalid symbol" );
       }
@@ -3280,7 +3277,7 @@ void database::validate_invariants()const
    {
       const auto& account_idx = get_index<account_index>().indices().get<by_name>();
       asset total_supply = asset( 0, STEEM_SYMBOL );
-      asset total_sbd = asset( 0, SBD_SYMBOL );
+//      asset total_sbd = asset( 0, SBD_SYMBOL );
       asset total_vesting = asset( 0, VESTS_SYMBOL );
       asset pending_vesting_steem = asset( 0, STEEM_SYMBOL );
       share_type total_vsf_votes = share_type( 0 );
@@ -3297,9 +3294,9 @@ void database::validate_invariants()const
          total_supply += itr->balance;
          total_supply += itr->savings_balance;
          total_supply += itr->reward_steem_balance;
-         total_sbd += itr->sbd_balance;
-         total_sbd += itr->savings_sbd_balance;
-         total_sbd += itr->reward_sbd_balance;
+//         total_sbd += itr->sbd_balance;
+//         total_sbd += itr->savings_sbd_balance;
+//         total_sbd += itr->reward_sbd_balance;
          total_vesting += itr->vesting_shares;
          total_vesting += itr->reward_vesting_balance;
          pending_vesting_steem += itr->reward_vesting_steem;
@@ -3316,8 +3313,8 @@ void database::validate_invariants()const
       {
          if( itr->amount.symbol == STEEM_SYMBOL )
             total_supply += itr->amount;
-         else if( itr->amount.symbol == SBD_SYMBOL )
-            total_sbd += itr->amount;
+//         else if( itr->amount.symbol == SBD_SYMBOL )
+//            total_sbd += itr->amount;
          else
             FC_ASSERT( false, "Encountered illegal symbol in convert_request_object" );
       }
@@ -3328,12 +3325,12 @@ void database::validate_invariants()const
       for( auto itr = escrow_idx.begin(); itr != escrow_idx.end(); ++itr )
       {
          total_supply += itr->steem_balance;
-         total_sbd += itr->sbd_balance;
+//         total_sbd += itr->sbd_balance;
 
          if( itr->pending_fee.symbol == STEEM_SYMBOL )
             total_supply += itr->pending_fee;
-         else if( itr->pending_fee.symbol == SBD_SYMBOL )
-            total_sbd += itr->pending_fee;
+//         else if( itr->pending_fee.symbol == SBD_SYMBOL )
+//            total_sbd += itr->pending_fee;
          else
             FC_ASSERT( false, "found escrow pending fee that is not SBD or STEEM" );
       }
@@ -3344,8 +3341,8 @@ void database::validate_invariants()const
       {
          if( itr->amount.symbol == STEEM_SYMBOL )
             total_supply += itr->amount;
-         else if( itr->amount.symbol == SBD_SYMBOL )
-            total_sbd += itr->amount;
+//         else if( itr->amount.symbol == SBD_SYMBOL )
+//            total_sbd += itr->amount;
          else
             FC_ASSERT( false, "found savings withdraw that is not SBD or STEEM" );
       }
@@ -3372,17 +3369,17 @@ void database::validate_invariants()const
       total_supply += gpo.total_vesting_fund_steem + gpo.total_reward_fund_steem + gpo.pending_rewarded_vesting_steem;
 
       FC_ASSERT( gpo.current_supply == total_supply, "", ("gpo.current_supply",gpo.current_supply)("total_supply",total_supply) );
-      FC_ASSERT( gpo.current_sbd_supply == total_sbd, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("total_sbd",total_sbd) );
+//      FC_ASSERT( gpo.current_sbd_supply == total_sbd, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("total_sbd",total_sbd) );
       FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_vesting, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_vesting",total_vesting) );
       FC_ASSERT( gpo.total_vesting_shares.amount == total_vsf_votes, "", ("total_vesting_shares",gpo.total_vesting_shares)("total_vsf_votes",total_vsf_votes) );
       FC_ASSERT( gpo.pending_rewarded_vesting_steem == pending_vesting_steem, "", ("pending_rewarded_vesting_steem",gpo.pending_rewarded_vesting_steem)("pending_vesting_steem", pending_vesting_steem));
 
-      FC_ASSERT( gpo.virtual_supply >= gpo.current_supply );
-      if ( !get_feed_history().current_median_history.is_null() )
-      {
-         FC_ASSERT( gpo.current_sbd_supply * get_feed_history().current_median_history + gpo.current_supply
-            == gpo.virtual_supply, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("get_feed_history().current_median_history",get_feed_history().current_median_history)("gpo.current_supply",gpo.current_supply)("gpo.virtual_supply",gpo.virtual_supply) );
-      }
+      FC_ASSERT( gpo.virtual_supply == gpo.current_supply );
+//      if ( !get_feed_history().current_median_history.is_null() )
+//      {
+//         FC_ASSERT( gpo.current_sbd_supply * get_feed_history().current_median_history + gpo.current_supply
+//            == gpo.virtual_supply, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("get_feed_history().current_median_history",get_feed_history().current_median_history)("gpo.current_supply",gpo.current_supply)("gpo.virtual_supply",gpo.virtual_supply) );
+//      }
    }
    FC_CAPTURE_LOG_AND_RETHROW( (head_block_num()) );
 }
