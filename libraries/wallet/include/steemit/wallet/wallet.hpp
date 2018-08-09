@@ -125,12 +125,6 @@ class wallet_api
        */
       vector<applied_operation>           get_ops_in_block( uint32_t block_num, bool only_virtual = true );
 
-      /** Return the current price feed history
-       *
-       * @returns Price feed history data on the blockchain
-       */
-      feed_history_api_obj                 get_feed_history()const;
-
       /**
        * Returns the list of witnesses producing blocks in the current round (21 Blocks)
        */
@@ -540,15 +534,6 @@ class wallet_api
        * @returns the information about the witness stored in the block chain
        */
       optional< witness_api_obj > get_witness(string owner_account);
-
-      /** Returns conversion requests by an account
-       *
-       * @param owner Account name of the account owning the requests
-       *
-       * @returns All pending conversion requests by account
-       */
-      vector<convert_request_api_obj> get_conversion_requests( string owner );
-
 
       /**
        * Update a witness object owned by the given account.
@@ -970,8 +955,6 @@ FC_API( steemit::wallet::wallet_api,
         (get_account)
         (get_block)
         (get_ops_in_block)
-        (get_feed_history)
-        (get_conversion_requests)
         (get_account_history)
         (get_state)
         (get_withdraw_routes)

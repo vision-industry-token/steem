@@ -17,29 +17,6 @@ namespace steemit { namespace chain {
 
    typedef protocol::fixed_string_16 reward_fund_name_type;
 
-   /**
-    *  This object is used to track pending requests to convert sbd to steem
-    */
-   class convert_request_object : public object< convert_request_object_type, convert_request_object >
-   {
-      public:
-         template< typename Constructor, typename Allocator >
-         convert_request_object( Constructor&& c, allocator< Allocator > a )
-         {
-            c( *this );
-         }
-
-         convert_request_object(){}
-
-         id_type           id;
-
-         account_name_type owner;
-         uint32_t          requestid = 0; ///< id set by owner, the owner,requestid pair must be unique
-         asset             amount;
-         time_point_sec    conversion_date; ///< at this time the feed_history_median_price * amount
-   };
-
-
    class escrow_object : public object< escrow_object_type, escrow_object >
    {
       public:
@@ -90,27 +67,6 @@ namespace steemit { namespace chain {
          uint32_t          request_id = 0;
          asset             amount;
          time_point_sec    complete;
-   };
-
-   /**
-    *  This object gets updated once per hour, on the hour
-    */
-   class feed_history_object  : public object< feed_history_object_type, feed_history_object >
-   {
-      feed_history_object() = delete;
-
-      public:
-         template< typename Constructor, typename Allocator >
-         feed_history_object( Constructor&& c, allocator< Allocator > a )
-            :price_history( a.get_segment_manager() )
-         {
-            c( *this );
-         }
-
-         id_type                                   id;
-
-         price                                     current_median_history; ///< the current median of the price history, used as the base for convert operations
-         bip::deque< price, allocator< price > >   price_history; ///< tracks this last week of median_feed one per hour
    };
 
    /**
@@ -189,40 +145,9 @@ namespace steemit { namespace chain {
    struct by_account;
 
 
-
    struct by_owner;
    struct by_conversion_date;
-   typedef multi_index_container<
-      convert_request_object,
-      indexed_by<
-         ordered_unique< tag< by_id >, member< convert_request_object, convert_request_id_type, &convert_request_object::id > >,
-         ordered_unique< tag< by_conversion_date >,
-            composite_key< convert_request_object,
-               member< convert_request_object, time_point_sec, &convert_request_object::conversion_date >,
-               member< convert_request_object, convert_request_id_type, &convert_request_object::id >
-            >
-         >,
-         ordered_unique< tag< by_owner >,
-            composite_key< convert_request_object,
-               member< convert_request_object, account_name_type, &convert_request_object::owner >,
-               member< convert_request_object, uint32_t, &convert_request_object::requestid >
-            >
-         >
-      >,
-      allocator< convert_request_object >
-   > convert_request_index;
 
-   struct by_owner;
-   struct by_volume_weight;
-
-
-   typedef multi_index_container<
-      feed_history_object,
-      indexed_by<
-         ordered_unique< tag< by_id >, member< feed_history_object, feed_history_id_type, &feed_history_object::id > >
-      >,
-      allocator< feed_history_object >
-   > feed_history_index;
 
    struct by_withdraw_route;
    struct by_destination;
@@ -361,14 +286,6 @@ namespace steemit { namespace chain {
 
 FC_REFLECT_ENUM( steemit::chain::curve_id,
                   (quadratic)(quadratic_curation)(linear)(square_root))
-
-FC_REFLECT( steemit::chain::feed_history_object,
-             (id)(current_median_history)(price_history) )
-CHAINBASE_SET_INDEX_TYPE( steemit::chain::feed_history_object, steemit::chain::feed_history_index )
-
-FC_REFLECT( steemit::chain::convert_request_object,
-             (id)(owner)(requestid)(amount)(conversion_date) )
-CHAINBASE_SET_INDEX_TYPE( steemit::chain::convert_request_object, steemit::chain::convert_request_index )
 
 FC_REFLECT( steemit::chain::withdraw_vesting_route_object,
              (id)(from_account)(to_account)(percent)(auto_vest) )

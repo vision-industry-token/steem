@@ -136,7 +136,6 @@ namespace steemit { namespace chain {
 
          const dynamic_global_property_object&  get_dynamic_global_properties()const;
          const node_property_object&            get_node_properties()const;
-         const feed_history_object&             get_feed_history()const;
          const witness_schedule_object&         get_witness_schedule_object()const;
          const hardfork_property_object&        get_hardfork_property_object()const;
 
@@ -321,12 +320,10 @@ namespace steemit { namespace chain {
          share_type cashout_comment_helper( util::comment_reward_context& ctx, const comment_object& comment );
          void process_comment_cashout();
          void process_funds();
-         void process_conversions();
          void process_savings_withdraws();
          void account_recovery_processing();
          void expire_escrow_ratification();
          void process_decline_voting_rights();
-         void update_median_feed();
 
          asset get_pow_reward()const;
 

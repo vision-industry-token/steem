@@ -167,8 +167,6 @@ class database_api
        */
       dynamic_global_property_api_obj  get_dynamic_global_properties()const;
       chain_properties                 get_chain_properties()const;
-      price                            get_current_median_history_price()const;
-      feed_history_api_obj             get_feed_history()const;
       witness_schedule_api_obj         get_witness_schedule()const;
       hardfork_version                 get_hardfork_version()const;
       scheduled_hardfork               get_next_scheduled_hardfork()const;
@@ -241,8 +239,6 @@ class database_api
        * This function has semantics identical to @ref get_objects
        */
       vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids)const;
-
-      vector<convert_request_api_obj> get_conversion_requests( const string& account_name )const;
 
       /**
        * @brief Get the witness owned by a given account
@@ -455,8 +451,6 @@ FC_API(steemit::app::database_api,
    (get_config)
    (get_dynamic_global_properties)
    (get_chain_properties)
-   (get_feed_history)
-   (get_current_median_history_price)
    (get_witness_schedule)
    (get_hardfork_version)
    (get_next_scheduled_hardfork)
@@ -471,7 +465,6 @@ FC_API(steemit::app::database_api,
    (lookup_account_names)
    (lookup_accounts)
    (get_account_count)
-   (get_conversion_requests)
    (get_account_history)
    (get_owner_history)
    (get_recovery_request)

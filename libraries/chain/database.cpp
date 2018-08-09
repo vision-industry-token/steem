@@ -430,11 +430,6 @@ const node_property_object& database::get_node_properties() const
    return _node_property_object;
 }
 
-const feed_history_object& database::get_feed_history()const
-{ try {
-   return get< feed_history_object >();
-} FC_CAPTURE_AND_RETHROW() }
-
 const witness_schedule_object& database::get_witness_schedule_object()const
 { try {
    return get< witness_schedule_object >();
@@ -1614,7 +1609,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 void database::process_comment_cashout()
 {
    util::comment_reward_context ctx;
-   ctx.current_steem_price = get_feed_history().current_median_history;
+//   ctx.current_steem_price = get_feed_history().current_median_history;
 
    vector< reward_fund_context > funds;
    vector< share_type > steem_awarded;
@@ -1807,59 +1802,6 @@ share_type database::pay_reward_funds( share_type reward )
    return used_rewards;
 }
 
-/**
- *  Iterates over all conversion requests with a conversion date before
- *  the head block time and then converts them to/from steem/sbd at the
- *  current median price feed history price times the premium
- */
-void database::process_conversions()
-{
-   auto now = head_block_time();
-   const auto& request_by_date = get_index< convert_request_index >().indices().get< by_conversion_date >();
-   auto itr = request_by_date.begin();
-
-   const auto& fhistory = get_feed_history();
-   if( fhistory.current_median_history.is_null() )
-      return;
-
-   asset net_sbd( 0, SBD_SYMBOL );
-   asset net_steem( 0, STEEM_SYMBOL );
-
-   while( itr != request_by_date.end() && itr->conversion_date <= now )
-   {
-      const auto& user = get_account( itr->owner );
-      auto amount_to_issue = itr->amount * fhistory.current_median_history;
-
-      adjust_balance( user, amount_to_issue );
-
-      net_sbd   += itr->amount;
-      net_steem += amount_to_issue;
-
-      push_virtual_operation( fill_convert_request_operation ( user.name, itr->requestid, itr->amount, amount_to_issue ) );
-
-      remove( *itr );
-      itr = request_by_date.begin();
-   }
-
-   const auto& props = get_dynamic_global_properties();
-   modify( props, [&]( dynamic_global_property_object& p )
-   {
-       p.current_supply += net_steem;
-       p.virtual_supply += net_steem;
-//       p.virtual_supply -= net_sbd * get_feed_history().current_median_history;
-   } );
-}
-
-asset database::to_sbd( const asset& steem )const
-{
-   return util::to_sbd( get_feed_history().current_median_history, steem );
-}
-
-asset database::to_steem( const asset& sbd )const
-{
-   return util::to_steem( get_feed_history().current_median_history, sbd );
-}
-
 void database::account_recovery_processing()
 {
    // Clear expired recovery requests
@@ -2037,8 +1979,6 @@ void database::initialize_indexes()
    add_core_index< comment_index                           >(*this);
    add_core_index< comment_vote_index                      >(*this);
    add_core_index< witness_vote_index                      >(*this);
-   add_core_index< feed_history_index                      >(*this);
-   add_core_index< convert_request_index                   >(*this);
    add_core_index< operation_index                         >(*this);
    add_core_index< account_history_index                   >(*this);
    add_core_index< hardfork_property_index                 >(*this);
@@ -2242,10 +2182,6 @@ void database::init_genesis( uint64_t init_supply )
       } );
 
       // Nothing to do
-      create< feed_history_object >( [&]( feed_history_object& fho ) {
-          while( fho.price_history.size() > STEEMIT_FEED_HISTORY_WINDOW )
-             fho.price_history.pop_front();
-      });
       for( int i = 0; i < 0x10000; i++ )
          create< block_summary_object >( [&]( block_summary_object& ) {});
 
@@ -2572,12 +2508,10 @@ void database::_apply_block( const signed_block& next_block )
    clear_expired_delegations();
    update_witness_schedule(*this);
 
-   update_median_feed();
    update_virtual_supply();
 
    clear_null_account_balance();
    process_funds();
-   process_conversions();
    process_comment_cashout();
    process_vesting_withdrawals();
    process_savings_withdraws();
@@ -2644,66 +2578,6 @@ void database::process_header_extensions( const signed_block& next_block )
       ++itr;
    }
 }
-
-
-
-void database::update_median_feed() {
-try {
-//   if( (head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0 )
-//      return;
-//
-//   auto now = head_block_time();
-//   const witness_schedule_object& wso = get_witness_schedule_object();
-//   vector<price> feeds; feeds.reserve( wso.num_scheduled_witnesses );
-//   for( int i = 0; i < wso.num_scheduled_witnesses; i++ )
-//   {
-//      const auto& wit = get_witness( wso.current_shuffled_witnesses[i] );
-//
-//      if( now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE_SECONDS && !wit.sbd_exchange_rate.is_null() )
-//      {
-//         feeds.push_back( wit.sbd_exchange_rate );
-//      }
-//   }
-//
-//   if( feeds.size() >= STEEMIT_MIN_FEEDS )
-//   {
-//      std::sort( feeds.begin(), feeds.end() );
-//      auto median_feed = feeds[feeds.size()/2];
-//
-//      modify( get_feed_history(), [&]( feed_history_object& fho )
-//      {
-//         fho.price_history.push_back( median_feed );
-//         size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
-//
-//         if( fho.price_history.size() > steemit_feed_history_window )
-//            fho.price_history.pop_front();
-//
-//         if( fho.price_history.size() )
-//         {
-//            std::deque< price > copy;
-//            for( auto i : fho.price_history )
-//            {
-//               copy.push_back( i );
-//            }
-//
-//            std::sort( copy.begin(), copy.end() ); /// TODO: use nth_item
-//            fho.current_median_history = copy[copy.size()/2];
-//
-//#ifdef IS_TEST_NET
-//            if( skip_price_feed_limit_check )
-//               return;
-//#endif
-//
-//            const auto& gpo = get_dynamic_global_properties();
-//            price min_price( asset( 9 * gpo.current_sbd_supply.amount, SBD_SYMBOL ), gpo.current_supply ); // This price limits SBD to 10% market cap
-//
-//            if( min_price > fho.current_median_history )
-//               fho.current_median_history = min_price;
-//
-//         }
-//      });
-//   }
-} FC_CAPTURE_AND_RETHROW() }
 
 void database::apply_transaction(const signed_transaction& trx, uint32_t skip)
 {
@@ -3306,19 +3180,6 @@ void database::validate_invariants()const
                                       itr->proxied_vsf_votes[STEEMIT_MAX_PROXY_RECURSION_DEPTH - 1] :
                                       itr->vesting_shares.amount ) );
       }
-
-      const auto& convert_request_idx = get_index< convert_request_index >().indices();
-
-      for( auto itr = convert_request_idx.begin(); itr != convert_request_idx.end(); ++itr )
-      {
-         if( itr->amount.symbol == STEEM_SYMBOL )
-            total_supply += itr->amount;
-//         else if( itr->amount.symbol == SBD_SYMBOL )
-//            total_sbd += itr->amount;
-         else
-            FC_ASSERT( false, "Encountered illegal symbol in convert_request_object" );
-      }
-
 
       const auto& escrow_idx = get_index< escrow_index >().indices().get< by_id >();
 

@@ -1195,7 +1195,6 @@ pair<public_key_type,string> wallet_api::get_private_key_from_password( string a
    return std::make_pair( public_key_type( priv.get_public_key() ), key_to_wif( priv ) );
 }
 
-feed_history_api_obj wallet_api::get_feed_history()const { return my->_remote_db->get_feed_history(); }
 
 /**
  * This method is used by faucets to create new accounts for other users which must
@@ -2000,11 +1999,6 @@ annotated_signed_transaction wallet_api::set_withdraw_vesting_route( string from
     tx.validate();
 
    return my->sign_transaction( tx, broadcast );
-}
-
-vector< convert_request_api_obj > wallet_api::get_conversion_requests( string owner_account )
-{
-   return my->_remote_db->get_conversion_requests( owner_account );
 }
 
 string wallet_api::decrypt_memo( string encrypted_memo ) {

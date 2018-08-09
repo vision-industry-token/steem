@@ -104,9 +104,6 @@ struct bucket_object : public object< bucket_object_type, bucket_object >
    uint32_t             finished_vesting_withdrawals = 0;            ///< Processed vesting withdrawals that are now finished
    share_type           vests_withdrawn = 0;                         ///< Ammount of VESTS withdrawn to STEEM
    share_type           vests_transferred = 0;                       ///< Ammount of VESTS transferred to another account
-   uint32_t             sbd_conversion_requests_created = 0;         ///< SBD conversion requests created
-   share_type           sbd_to_be_converted = 0;                     ///< Amount of SBD to be converted
-   uint32_t             sbd_conversion_requests_filled = 0;          ///< SBD conversion requests filled
    share_type           steem_converted = 0;                         ///< Amount of STEEM that was converted
 };
 
@@ -167,9 +164,6 @@ FC_REFLECT( steemit::blockchain_statistics::bucket_object,
    (finished_vesting_withdrawals)
    (vests_withdrawn)
    (vests_transferred)
-   (sbd_conversion_requests_created)
-   (sbd_to_be_converted)
-   (sbd_conversion_requests_filled)
    (steem_converted)
 )
 CHAINBASE_SET_INDEX_TYPE( steemit::blockchain_statistics::bucket_object, steemit::blockchain_statistics::bucket_index )

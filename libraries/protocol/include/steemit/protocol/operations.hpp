@@ -53,7 +53,6 @@ namespace steemit { namespace protocol {
             account_create_with_delegation_operation,
 
             /// virtual operations below this point
-            fill_convert_request_operation,
             author_reward_operation,
             curation_reward_operation,
             comment_reward_operation,
