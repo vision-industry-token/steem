@@ -61,7 +61,6 @@ struct comment_api_obj
       net_votes( o.net_votes ),
       root_comment( o.root_comment ),
       max_accepted_payout( o.max_accepted_payout ),
-      percent_steem_dollars( o.percent_steem_dollars ),
       allow_replies( o.allow_replies ),
       allow_votes( o.allow_votes ),
       allow_curation_rewards( o.allow_curation_rewards )
@@ -113,7 +112,6 @@ struct comment_api_obj
    comment_id_type   root_comment;
 
    asset             max_accepted_payout;
-   uint16_t          percent_steem_dollars = 0;
    bool              allow_replies = false;
    bool              allow_votes = false;
    bool              allow_curation_rewards = false;
@@ -166,15 +164,7 @@ struct account_api_obj
       last_vote_time( a.last_vote_time ),
       balance( a.balance ),
       savings_balance( a.savings_balance ),
-      sbd_seconds( a.sbd_seconds ),
-      sbd_seconds_last_update( a.sbd_seconds_last_update ),
-      sbd_last_interest_payment( a.sbd_last_interest_payment ),
-      savings_sbd_balance( a.savings_sbd_balance ),
-      savings_sbd_seconds( a.savings_sbd_seconds ),
-      savings_sbd_seconds_last_update( a.savings_sbd_seconds_last_update ),
-      savings_sbd_last_interest_payment( a.savings_sbd_last_interest_payment ),
       savings_withdraw_requests( a.savings_withdraw_requests ),
-      reward_sbd_balance( a.reward_sbd_balance ),
       reward_steem_balance( a.reward_steem_balance ),
       reward_vesting_balance( a.reward_vesting_balance ),
       reward_vesting_steem( a.reward_vesting_steem ),
@@ -261,18 +251,8 @@ struct account_api_obj
    asset             balance;
    asset             savings_balance;
 
-   uint128_t         sbd_seconds;
-   time_point_sec    sbd_seconds_last_update;
-   time_point_sec    sbd_last_interest_payment;
-
-   asset             savings_sbd_balance;
-   uint128_t         savings_sbd_seconds;
-   time_point_sec    savings_sbd_seconds_last_update;
-   time_point_sec    savings_sbd_last_interest_payment;
-
    uint8_t           savings_withdraw_requests = 0;
 
-   asset             reward_sbd_balance;
    asset             reward_steem_balance;
    asset             reward_vesting_balance;
    asset             reward_vesting_steem;
@@ -381,8 +361,6 @@ struct witness_api_obj
       pow_worker( w.pow_worker ),
       signing_key( w.signing_key ),
       props( w.props ),
-      sbd_exchange_rate( w.sbd_exchange_rate ),
-      last_sbd_exchange_update( w.last_sbd_exchange_update ),
       votes( w.votes ),
       virtual_last_update( w.virtual_last_update ),
       virtual_position( w.virtual_position ),
@@ -405,8 +383,6 @@ struct witness_api_obj
    uint64_t          pow_worker = 0;
    public_key_type   signing_key;
    chain_properties  props;
-   price             sbd_exchange_rate;
-   time_point_sec    last_sbd_exchange_update;
    share_type        votes;
    fc::uint128       virtual_last_update;
    fc::uint128       virtual_position;
@@ -472,7 +448,7 @@ FC_REFLECT( steemit::app::comment_api_obj,
              (net_rshares)(abs_rshares)(vote_rshares)
              (children_abs_rshares)(cashout_time)(max_cashout_time)
              (total_vote_weight)(reward_weight)(total_payout_value)(curator_payout_value)(author_rewards)(net_votes)(root_comment)
-             (max_accepted_payout)(percent_steem_dollars)(allow_replies)(allow_votes)(allow_curation_rewards)
+             (max_accepted_payout)(allow_replies)(allow_votes)(allow_curation_rewards)
              (beneficiaries)
           )
 
@@ -482,10 +458,8 @@ FC_REFLECT( steemit::app::account_api_obj,
              (owner_challenged)(active_challenged)(last_owner_proved)(last_active_proved)(recovery_account)(last_account_recovery)(reset_account)
              (comment_count)(lifetime_vote_count)(post_count)(can_vote)(voting_power)(last_vote_time)
              (balance)
-             (savings_balance)
-             (sbd_seconds)(sbd_seconds_last_update)(sbd_last_interest_payment)
-             (savings_sbd_balance)(savings_sbd_seconds)(savings_sbd_seconds_last_update)(savings_sbd_last_interest_payment)(savings_withdraw_requests)
-             (reward_sbd_balance)(reward_steem_balance)(reward_vesting_balance)(reward_vesting_steem)
+             (savings_balance)(savings_withdraw_requests)
+             (reward_steem_balance)(reward_vesting_balance)(reward_vesting_steem)
              (vesting_shares)(delegated_vesting_shares)(received_vesting_shares)(vesting_withdraw_rate)(next_vesting_withdrawal)(withdrawn)(to_withdraw)(withdraw_routes)
              (curation_rewards)
              (posting_rewards)
@@ -535,7 +509,6 @@ FC_REFLECT( steemit::app::witness_api_obj,
              (url)(votes)(virtual_last_update)(virtual_position)(virtual_scheduled_time)(total_missed)
              (last_aslot)(last_confirmed_block_num)(pow_worker)(signing_key)
              (props)
-             (sbd_exchange_rate)(last_sbd_exchange_update)
              (last_work)
              (running_version)
              (hardfork_version_vote)(hardfork_time_vote)

@@ -4568,7 +4568,6 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_validate )
       claim_reward_balance_operation op;
       op.account = "alice";
       op.reward_steem = ASSET( "0.000 TESTS" );
-      op.reward_sbd = ASSET( "0.000 TBD" );
       op.reward_vests = ASSET( "0.000000 VESTS" );
 
 
@@ -4581,10 +4580,6 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_validate )
       op.validate();
 
       op.reward_steem.amount = 0;
-      op.reward_sbd.amount = 1000;
-      op.validate();
-
-      op.reward_sbd.amount = 0;
       op.reward_vests.amount = 1000;
       op.validate();
 
@@ -4595,22 +4590,12 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_validate )
       op.reward_steem = ASSET( "1.000 WRONG" );
       STEEMIT_REQUIRE_THROW( op.validate(), fc::assert_exception );
 
-
-      BOOST_TEST_MESSAGE( "Testing wrong SBD symbol" );
-      op.reward_steem = ASSET( "1.000 TESTS" );
-      op.reward_sbd = ASSET( "1.000 WRONG" );
-      STEEMIT_REQUIRE_THROW( op.validate(), fc::assert_exception );
-
-
       BOOST_TEST_MESSAGE( "Testing wrong VESTS symbol" );
-      op.reward_sbd = ASSET( "1.000 TBD" );
       op.reward_vests = ASSET( "1.000000 WRONG" );
       STEEMIT_REQUIRE_THROW( op.validate(), fc::assert_exception );
 
-
       BOOST_TEST_MESSAGE( "Testing a single negative amount" );
       op.reward_steem.amount = 1000;
-      op.reward_sbd.amount = -1000;
       STEEMIT_REQUIRE_THROW( op.validate(), fc::assert_exception );
    }
    FC_LOG_AND_RETHROW()
@@ -5416,8 +5401,8 @@ BOOST_AUTO_TEST_CASE( comment_beneficiaries_apply )
 
       BOOST_REQUIRE( db.get_account( "bob" ).reward_steem_balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "bob" ).reward_vesting_steem.amount + db.get_account( "sam" ).reward_vesting_steem.amount == db.get_comment( "alice", string( "test" ) ).beneficiary_payout_value.amount );
-      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_sbd_balance.amount + db.get_account( "alice" ).reward_vesting_steem.amount ) == db.get_account( "bob" ).reward_vesting_steem.amount + 2 );
-      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_sbd_balance.amount + db.get_account( "alice" ).reward_vesting_steem.amount ) * 2 == db.get_account( "sam" ).reward_vesting_steem.amount + 3 );
+      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) == db.get_account( "bob" ).reward_vesting_steem.amount + 2 );
+      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) * 2 == db.get_account( "sam" ).reward_vesting_steem.amount + 3 );
    }
    FC_LOG_AND_RETHROW()
 }

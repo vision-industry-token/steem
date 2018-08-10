@@ -1198,12 +1198,6 @@ void database::clear_null_account_balance()
       adjust_savings_balance( null_account, -null_account.savings_balance );
    }
 
-   if( null_account.savings_sbd_balance.amount > 0 )
-   {
-      total_sbd += null_account.savings_sbd_balance;
-      adjust_savings_balance( null_account, -null_account.savings_sbd_balance );
-   }
-
    if( null_account.vesting_shares.amount > 0 )
    {
       const auto& gpo = get_dynamic_global_properties();
@@ -1227,12 +1221,6 @@ void database::clear_null_account_balance()
    {
       total_steem += null_account.reward_steem_balance;
       adjust_reward_balance( null_account, -null_account.reward_steem_balance );
-   }
-
-   if( null_account.reward_sbd_balance.amount > 0 )
-   {
-      total_sbd += null_account.reward_sbd_balance;
-      adjust_reward_balance( null_account, -null_account.reward_sbd_balance );
    }
 
    if( null_account.reward_vesting_balance.amount > 0 )
@@ -1523,20 +1511,17 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             author_tokens -= total_beneficiary;
 
-            auto sbd_steem     = ( author_tokens * comment.percent_steem_dollars ) / ( 2 * STEEMIT_100_PERCENT ) ; // in STEEM_SYMBOL instead of SBD
-            auto vesting_steem = author_tokens - sbd_steem;
+            auto vesting_steem = author_tokens;
 
             const auto& author = get_account( comment.author );
             auto vest_created = create_vesting( author, vesting_steem, true );
-//            auto sbd_payout = create_sbd( author, sbd_steem, true );
 
-            //adjust_total_payout( comment, sbd_payout.first + to_sbd( sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ) ), to_sbd( asset( curation_tokens, STEEM_SYMBOL ) ), to_sbd( asset( total_beneficiary, STEEM_SYMBOL ) ) );
             adjust_total_payout( comment,
-                                 asset( sbd_steem + vesting_steem, STEEM_SYMBOL ),
+                                 asset( vesting_steem, STEEM_SYMBOL ),
                                  asset( curation_tokens, STEEM_SYMBOL ),
                                  asset( total_beneficiary, STEEM_SYMBOL ) );
 
-            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, STEEM_SYMBOL ), sbd_steem, vest_created ) );
+            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), vest_created ) );
             push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, STEEM_SYMBOL ) ) );
 
             #ifndef IS_LOW_MEM
@@ -2906,9 +2891,6 @@ void database::adjust_reward_balance( const account_object& a, const asset& delt
          case STEEM_SYMBOL:
             acnt.reward_steem_balance += delta;
             break;
-         case SBD_SYMBOL:
-            acnt.reward_sbd_balance += delta;
-            break;
          default:
             FC_ASSERT( false, "invalid symbol" );
       }
@@ -2965,8 +2947,6 @@ asset database::get_savings_balance( const account_object& a, asset_symbol_type 
    {
       case STEEM_SYMBOL:
          return a.savings_balance;
-      case SBD_SYMBOL:
-         return a.savings_sbd_balance;
       default:
          FC_ASSERT( !"invalid symbol" );
    }

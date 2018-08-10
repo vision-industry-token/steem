@@ -119,16 +119,13 @@ namespace steemit { namespace protocol {
     *  operation allows authors to update properties associated with their post.
     *
     *  The max_accepted_payout may be decreased, but never increased.
-    *  The percent_steem_dollars may be decreased, but never increased
-    *
     */
    struct comment_options_operation : public base_operation
    {
       account_name_type author;
       string            permlink;
 
-      asset             max_accepted_payout    = asset( 1000000000, SBD_SYMBOL );       /// SBD value of the maximum payout this post will receive
-      uint16_t          percent_steem_dollars  = STEEMIT_100_PERCENT; /// the percent of Steem Dollars to key, unkept amounts will be received as Steem Power
+      asset             max_accepted_payout    = asset( 1000000000, STEEM_SYMBOL );       /// STEEM_SYMBOL value of the maximum payout this post will receive
       bool              allow_votes            = true;      /// allows a post to receive votes;
       bool              allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
       comment_options_extensions_type extensions;
@@ -717,7 +714,6 @@ namespace steemit { namespace protocol {
    {
       account_name_type account;
       asset             reward_steem;
-      asset             reward_sbd;
       asset             reward_vests;
 
       void get_required_posting_authorities( flat_set< account_name_type >& a )const{ a.insert( account ); }
@@ -800,7 +796,7 @@ FC_REFLECT( steemit::protocol::delete_comment_operation, (author)(permlink) );
 FC_REFLECT( steemit::protocol::beneficiary_route_type, (account)(weight) )
 FC_REFLECT( steemit::protocol::comment_payout_beneficiaries, (beneficiaries) )
 FC_REFLECT_TYPENAME( steemit::protocol::comment_options_extension )
-FC_REFLECT( steemit::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
+FC_REFLECT( steemit::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(allow_votes)(allow_curation_rewards)(extensions) )
 
 FC_REFLECT( steemit::protocol::escrow_transfer_operation, (from)(to)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) );
 FC_REFLECT( steemit::protocol::escrow_approve_operation, (from)(to)(agent)(who)(escrow_id)(approve) );
@@ -812,5 +808,5 @@ FC_REFLECT( steemit::protocol::request_account_recovery_operation, (recovery_acc
 FC_REFLECT( steemit::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) );
 FC_REFLECT( steemit::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) );
 FC_REFLECT( steemit::protocol::decline_voting_rights_operation, (account)(decline) );
-FC_REFLECT( steemit::protocol::claim_reward_balance_operation, (account)(reward_steem)(reward_sbd)(reward_vests) )
+FC_REFLECT( steemit::protocol::claim_reward_balance_operation, (account)(reward_steem)(reward_vests) )
 FC_REFLECT( steemit::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) );

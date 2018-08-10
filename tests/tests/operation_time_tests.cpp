@@ -143,9 +143,9 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
       const account_object& bob_account   = db.get_account("bob");
       const account_object& dave_account  = db.get_account("dave");
 
-      BOOST_CHECK( alice_account.reward_sbd_balance == ASSET( "13972.000 TBD" ) );
-      BOOST_CHECK( bob_account.reward_sbd_balance == ASSET( "0.000 TBD" ) );
-      BOOST_CHECK( dave_account.reward_sbd_balance == alice_account.reward_sbd_balance );
+      BOOST_CHECK( alice_account.reward_steem_balance == ASSET( "13972.000 TESTS" ) );
+      BOOST_CHECK( bob_account.reward_steem_balance == ASSET( "0.000 TESTS" ) );
+      BOOST_CHECK( dave_account.reward_steem_balance == alice_account.reward_steem_balance );
    }
    FC_LOG_AND_RETHROW()
 }
@@ -1828,7 +1828,6 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
          db.modify( db.get_account( STEEMIT_NULL_ACCOUNT ), [&]( account_object& a )
          {
             a.reward_steem_balance = ASSET( "1.000 TESTS" );
-            a.reward_sbd_balance = ASSET( "1.000 TBD" );
             a.reward_vesting_balance = ASSET( "1.000000 VESTS" );
             a.reward_vesting_steem = ASSET( "1.000 TESTS" );
          });
@@ -1847,8 +1846,6 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).balance == ASSET( "1.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).vesting_shares > ASSET( "0.000000 VESTS" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).savings_balance == ASSET( "4.000 TESTS" ) );
-      BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).savings_sbd_balance == ASSET( "5.000 TBD" ) );
-      BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).reward_sbd_balance == ASSET( "1.000 TBD" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).reward_steem_balance == ASSET( "1.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).reward_vesting_balance == ASSET( "1.000000 VESTS" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).reward_vesting_steem == ASSET( "1.000 TESTS" ) );
@@ -1861,8 +1858,6 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).vesting_shares == ASSET( "0.000000 VESTS" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).savings_balance == ASSET( "0.000 TESTS" ) );
-      BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).savings_sbd_balance == ASSET( "0.000 TBD" ) );
-      BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).reward_sbd_balance == ASSET( "0.000 TBD" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).reward_steem_balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).reward_vesting_balance == ASSET( "0.000000 VESTS" ) );
       BOOST_REQUIRE( db.get_account( STEEMIT_NULL_ACCOUNT ).reward_vesting_steem == ASSET( "0.000 TESTS" ) );
