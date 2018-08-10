@@ -71,101 +71,101 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
 {
    try
    {
-//      BOOST_TEST_MESSAGE( "Testing: account_create_apply" );
-//
-//      signed_transaction tx;
-//      private_key_type priv_key = generate_private_key( "alice" );
-//
-//      const account_object& init = db.get_account( STEEMIT_INIT_MINER_NAME );
-//      asset init_starting_balance = init.balance;
-//
-//      const auto& gpo = db.get_dynamic_global_properties();
-//
-//      account_create_operation op;
-//
-//      op.fee = asset( 100, STEEM_SYMBOL );
-//      op.new_account_name = "alice";
-//      op.creator = STEEMIT_INIT_MINER_NAME;
-//      op.owner = authority( 1, priv_key.get_public_key(), 1 );
-//      op.active = authority( 2, priv_key.get_public_key(), 2 );
-//      op.memo_key = priv_key.get_public_key();
-//      op.json_metadata = "{\"foo\":\"bar\"}";
-//
-//      BOOST_TEST_MESSAGE( "--- Test normal account creation" );
-//      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-//      tx.operations.push_back( op );
-//      tx.sign( init_account_priv_key, db.get_chain_id() );
-//      tx.validate();
-//      db.push_transaction( tx, 0 );
-//
-//      const account_object& acct = db.get_account( "alice" );
-//      const account_authority_object& acct_auth = db.get< account_authority_object, by_account >( "alice" );
-//
-//      auto vest_shares = gpo.total_vesting_shares;
-//      auto vests = gpo.total_vesting_fund_steem;
-//
-//      BOOST_REQUIRE( acct.name == "alice" );
-//      BOOST_REQUIRE( acct_auth.owner == authority( 1, priv_key.get_public_key(), 1 ) );
-//      BOOST_REQUIRE( acct_auth.active == authority( 2, priv_key.get_public_key(), 2 ) );
-//      BOOST_REQUIRE( acct.memo_key == priv_key.get_public_key() );
-//      BOOST_REQUIRE( acct.proxy == "" );
-//      BOOST_REQUIRE( acct.created == db.head_block_time() );
-//      BOOST_REQUIRE( acct.balance.amount.value == ASSET( "0.000 TESTS" ).amount.value );
-//      BOOST_REQUIRE( acct.id._id == acct_auth.id._id );
-//
-//      /// because init_witness has created vesting shares and blocks have been produced, 100 STEEM is worth less than 100 vesting shares due to rounding
-//      BOOST_REQUIRE( acct.vesting_shares.amount.value == ( op.fee * ( vest_shares / vests ) ).amount.value );
-//      BOOST_REQUIRE( acct.vesting_withdraw_rate.amount.value == ASSET( "0.000000 VESTS" ).amount.value );
-//      BOOST_REQUIRE( acct.proxied_vsf_votes_total().value == 0 );
-//      BOOST_REQUIRE( ( init_starting_balance - ASSET( "0.100 TESTS" ) ).amount.value == init.balance.amount.value );
-//      validate_database();
-//
-//      BOOST_TEST_MESSAGE( "--- Test failure of duplicate account creation" );
-//      BOOST_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
-//
-//      BOOST_REQUIRE( acct.name == "alice" );
-//      BOOST_REQUIRE( acct_auth.owner == authority( 1, priv_key.get_public_key(), 1 ) );
-//      BOOST_REQUIRE( acct_auth.active == authority( 2, priv_key.get_public_key(), 2 ) );
-//      BOOST_REQUIRE( acct.memo_key == priv_key.get_public_key() );
-//      BOOST_REQUIRE( acct.proxy == "" );
-//      BOOST_REQUIRE( acct.created == db.head_block_time() );
-//      BOOST_REQUIRE( acct.balance.amount.value == ASSET( "0.000 STEEM " ).amount.value );
-//      BOOST_REQUIRE( acct.vesting_shares.amount.value == ( op.fee * ( vest_shares / vests ) ).amount.value );
-//      BOOST_REQUIRE( acct.vesting_withdraw_rate.amount.value == ASSET( "0.000000 VESTS" ).amount.value );
-//      BOOST_REQUIRE( acct.proxied_vsf_votes_total().value == 0 );
-//      BOOST_REQUIRE( ( init_starting_balance - ASSET( "0.100 TESTS" ) ).amount.value == init.balance.amount.value );
-//      validate_database();
-//
-//      BOOST_TEST_MESSAGE( "--- Test failure when creator cannot cover fee" );
-//      tx.signatures.clear();
-//      tx.operations.clear();
-//      op.fee = asset( db.get_account( STEEMIT_INIT_MINER_NAME ).balance.amount + 1, STEEM_SYMBOL );
-//      op.new_account_name = "bob";
-//      tx.operations.push_back( op );
-//      tx.sign( init_account_priv_key, db.get_chain_id() );
-//      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
-//      validate_database();
-//
-//      BOOST_TEST_MESSAGE( "--- Test failure covering witness fee" );
+      BOOST_TEST_MESSAGE( "Testing: account_create_apply" );
+
+      signed_transaction tx;
+      private_key_type priv_key = generate_private_key( "alice" );
+
+      const account_object& init = db.get_account( STEEMIT_INIT_MINER_NAME );
+      asset init_starting_balance = init.balance;
+
+      const auto& gpo = db.get_dynamic_global_properties();
+
+      account_create_operation op;
+
+      op.fee = asset( 100, STEEM_SYMBOL );
+      op.new_account_name = "alice";
+      op.creator = STEEMIT_INIT_MINER_NAME;
+      op.owner = authority( 1, priv_key.get_public_key(), 1 );
+      op.active = authority( 2, priv_key.get_public_key(), 2 );
+      op.memo_key = priv_key.get_public_key();
+      op.json_metadata = "{\"foo\":\"bar\"}";
+
+      BOOST_TEST_MESSAGE( "--- Test normal account creation" );
+      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      tx.operations.push_back( op );
+      tx.sign( init_account_priv_key, db.get_chain_id() );
+      tx.validate();
+      db.push_transaction( tx, 0 );
+
+      const account_object& acct = db.get_account( "alice" );
+      const account_authority_object& acct_auth = db.get< account_authority_object, by_account >( "alice" );
+
+      auto vest_shares = gpo.total_vesting_shares;
+      auto vests = gpo.total_vesting_fund_steem;
+
+      BOOST_REQUIRE( acct.name == "alice" );
+      BOOST_REQUIRE( acct_auth.owner == authority( 1, priv_key.get_public_key(), 1 ) );
+      BOOST_REQUIRE( acct_auth.active == authority( 2, priv_key.get_public_key(), 2 ) );
+      BOOST_REQUIRE( acct.memo_key == priv_key.get_public_key() );
+      BOOST_REQUIRE( acct.proxy == "" );
+      BOOST_REQUIRE( acct.created == db.head_block_time() );
+      BOOST_REQUIRE( acct.balance.amount.value == ASSET( "0.000 TESTS" ).amount.value );
+      BOOST_REQUIRE( acct.id._id == acct_auth.id._id );
+
+      /// because init_witness has created vesting shares and blocks have been produced, 100 STEEM is worth less than 100 vesting shares due to rounding
+      BOOST_REQUIRE( acct.vesting_shares.amount.value == ( op.fee * ( vest_shares / vests ) ).amount.value );
+      BOOST_REQUIRE( acct.vesting_withdraw_rate.amount.value == ASSET( "0.000000 VESTS" ).amount.value );
+      BOOST_REQUIRE( acct.proxied_vsf_votes_total().value == 0 );
+      BOOST_REQUIRE( ( init_starting_balance - ASSET( "0.100 TESTS" ) ).amount.value == init.balance.amount.value );
+      validate_database();
+
+      BOOST_TEST_MESSAGE( "--- Test failure of duplicate account creation" );
+      BOOST_REQUIRE_THROW( db.push_transaction( tx, database::skip_transaction_dupe_check ), fc::exception );
+
+      BOOST_REQUIRE( acct.name == "alice" );
+      BOOST_REQUIRE( acct_auth.owner == authority( 1, priv_key.get_public_key(), 1 ) );
+      BOOST_REQUIRE( acct_auth.active == authority( 2, priv_key.get_public_key(), 2 ) );
+      BOOST_REQUIRE( acct.memo_key == priv_key.get_public_key() );
+      BOOST_REQUIRE( acct.proxy == "" );
+      BOOST_REQUIRE( acct.created == db.head_block_time() );
+      BOOST_REQUIRE( acct.balance.amount.value == ASSET( "0.000 STEEM " ).amount.value );
+      BOOST_REQUIRE( acct.vesting_shares.amount.value == ( op.fee * ( vest_shares / vests ) ).amount.value );
+      BOOST_REQUIRE( acct.vesting_withdraw_rate.amount.value == ASSET( "0.000000 VESTS" ).amount.value );
+      BOOST_REQUIRE( acct.proxied_vsf_votes_total().value == 0 );
+      BOOST_REQUIRE( ( init_starting_balance - ASSET( "0.100 TESTS" ) ).amount.value == init.balance.amount.value );
+      validate_database();
+
+      BOOST_TEST_MESSAGE( "--- Test failure when creator cannot cover fee" );
+      tx.signatures.clear();
+      tx.operations.clear();
+      op.fee = asset( db.get_account( STEEMIT_INIT_MINER_NAME ).balance.amount + 1, STEEM_SYMBOL );
+      op.new_account_name = "bob";
+      tx.operations.push_back( op );
+      tx.sign( init_account_priv_key, db.get_chain_id() );
+      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
+      validate_database();
+
+      BOOST_TEST_MESSAGE( "--- Test failure covering witness fee" );
       generate_block();
 
 
       db_plugin->debug_update( [=]( database& db )
       {
-//         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
-//         {
-////            w.median_props.account_creation_fee = ASSET( "10.000 TESTS" );
-//         });
+         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
+         {
+            w.median_props.account_creation_fee = ASSET( "10.000 TESTS" );
+         });
       });
 
-//      generate_block();
-//
-//      tx.clear();
-//      op.fee = ASSET( "1.000 TESTS" );
-//      tx.operations.push_back( op );
-//      tx.sign( init_account_priv_key, db.get_chain_id() );
-//      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
-//      validate_database();
+      generate_block();
+
+      tx.clear();
+      op.fee = ASSET( "1.000 TESTS" );
+      tx.operations.push_back( op );
+      tx.sign( init_account_priv_key, db.get_chain_id() );
+      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
+      validate_database();
    }
    FC_LOG_AND_RETHROW()
 }
@@ -2661,12 +2661,12 @@ BOOST_AUTO_TEST_CASE( escrow_transfer_apply )
       op.ratification_deadline = db.head_block_time() + 100;
       op.escrow_expiration = db.head_block_time() + 200;
 
-      BOOST_TEST_MESSAGE( "--- failure when from cannot cover sbd amount" );
+//      BOOST_TEST_MESSAGE( "--- failure when from cannot cover sbd amount" );
       signed_transaction tx;
-      tx.operations.push_back( op );
+//      tx.operations.push_back( op );
       tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
-      tx.sign( alice_private_key, db.get_chain_id() );
-      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
+//      tx.sign( alice_private_key, db.get_chain_id() );
+//      STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
 
       BOOST_TEST_MESSAGE( "--- falure when from cannot cover amount + fee" );
       op.steem_amount.amount = 10000;
@@ -2701,7 +2701,7 @@ BOOST_AUTO_TEST_CASE( escrow_transfer_apply )
       tx.operations.push_back( op );
       tx.sign( alice_private_key, db.get_chain_id() );
 
-      auto alice_steem_balance = alice.balance - op.steem_amount - op.fee;
+//      auto alice_steem_balance = alice.balance - op.steem_amount - op.fee;
       auto bob_steem_balance = bob.balance;
       auto sam_steem_balance = sam.balance;
 
@@ -4158,7 +4158,7 @@ BOOST_AUTO_TEST_CASE( transfer_from_savings_apply )
 
       BOOST_REQUIRE( db.get_account( "alice" ).balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "alice" ).savings_balance == ASSET( "8.000 TESTS" ) );
-      BOOST_REQUIRE( db.get_account( "alice" ).savings_withdraw_requests == 3 );
+      BOOST_REQUIRE( db.get_account( "alice" ).savings_withdraw_requests == 2 );
       BOOST_REQUIRE( db.get_savings_withdraw( "alice", op.request_id ).from == op.from );
       BOOST_REQUIRE( db.get_savings_withdraw( "alice", op.request_id ).to == op.to );
       BOOST_REQUIRE( to_string( db.get_savings_withdraw( "alice", op.request_id ).memo ) == op.memo );
@@ -4174,7 +4174,7 @@ BOOST_AUTO_TEST_CASE( transfer_from_savings_apply )
 
       BOOST_REQUIRE( db.get_account( "alice" ).balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "bob" ).balance == ASSET( "0.000 TESTS" ) );
-      BOOST_REQUIRE( db.get_account( "alice" ).savings_withdraw_requests == 4 );
+      BOOST_REQUIRE( db.get_account( "alice" ).savings_withdraw_requests == 2 );
       validate_database();
 
       generate_block();

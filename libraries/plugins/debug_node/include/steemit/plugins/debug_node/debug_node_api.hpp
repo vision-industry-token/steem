@@ -33,6 +33,16 @@ struct get_dev_key_result
    chain::public_key_type                  public_key;
 };
 
+struct debug_mine_args
+{
+   std::string                             worker_account;
+   fc::optional< chain::chain_properties > props;
+};
+
+struct debug_mine_result
+{
+};
+
 class debug_node_api
 {
    public:
@@ -92,6 +102,11 @@ class debug_node_api
       get_dev_key_result debug_get_dev_key( get_dev_key_args args );
 
       /**
+       * Synchronous mining, does not return until work is found.
+       */
+      debug_mine_result debug_mine( debug_mine_args args );
+
+      /**
        * Start a node with given initial path.
        */
       // not implemented
@@ -134,6 +149,14 @@ FC_REFLECT( steemit::plugin::debug_node::get_dev_key_result,
    (public_key)
    )
 
+FC_REFLECT( steemit::plugin::debug_node::debug_mine_args,
+   (worker_account)
+   (props)
+   )
+
+FC_REFLECT( steemit::plugin::debug_node::debug_mine_result,
+   )
+
 FC_API(steemit::plugin::debug_node::debug_node_api,
        (debug_push_blocks)
        (debug_generate_blocks)
@@ -152,4 +175,5 @@ FC_API(steemit::plugin::debug_node::debug_node_api,
        (debug_get_json_schema)
        (debug_set_dev_key_prefix)
        (debug_get_dev_key)
+       (debug_mine)
      )

@@ -502,6 +502,24 @@ namespace steemit { namespace protocol {
    };
 
 
+   struct pow2_input
+   {
+      account_name_type worker_account;
+      block_id_type     prev_block;
+      uint64_t          nonce = 0;
+   };
+
+
+   struct pow2
+   {
+      pow2_input        input;
+      uint32_t          pow_summary = 0;
+
+      void create( const block_id_type& prev_block, const account_name_type& account_name, uint64_t nonce );
+      void validate()const;
+   };
+
+
    /**
     * This operation is used to report a miner who signs two blocks
     * at the same time. To be valid, the violation must be reported within
@@ -731,6 +749,8 @@ FC_REFLECT( steemit::protocol::transfer_to_savings_operation, (from)(to)(amount)
 FC_REFLECT( steemit::protocol::transfer_from_savings_operation, (from)(request_id)(to)(amount)(memo) )
 FC_REFLECT( steemit::protocol::cancel_transfer_from_savings_operation, (from)(request_id) )
 FC_REFLECT( steemit::protocol::report_over_production_operation, (reporter)(first_block)(second_block) )
+FC_REFLECT( steemit::protocol::pow2, (input)(pow_summary) )
+FC_REFLECT( steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce) )
 FC_REFLECT( steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) );
 FC_REFLECT( steemit::protocol::account_create_operation,
             (fee)

@@ -69,6 +69,7 @@ clean_database_fixture::clean_database_fixture()
       witness_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_priv_key, "foo.bar", init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount );
    }
 
+   generate_block();
    validate_database();
    } catch ( const fc::exception& e )
    {
@@ -223,11 +224,10 @@ const account_object& database_fixture::account_create(
 {
    try
    {
-      account_create_with_delegation_operation op;
+      account_create_operation op;
       op.new_account_name = name;
       op.creator = creator;
       op.fee = asset( fee, STEEM_SYMBOL );
-      op.delegation = asset( 0, VESTS_SYMBOL );
       op.owner = authority( 1, key, 1 );
       op.active = authority( 1, key, 1 );
       op.posting = authority( 1, post_key, 1 );
