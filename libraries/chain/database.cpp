@@ -2113,7 +2113,6 @@ void database::init_genesis( uint64_t init_supply )
 
       // HF 2-8
       retally_witness_votes();
-      retally_witness_votes();
       reset_virtual_schedule_time(*this);
       retally_witness_vote_counts();
       retally_comment_children();
@@ -2127,12 +2126,6 @@ void database::init_genesis( uint64_t init_supply )
 //         STEEMIT_MAX_VOTED_WITNESSES_HF17 + STEEMIT_MAX_MINER_WITNESSES_HF17 + STEEMIT_MAX_RUNNER_WITNESSES_HF17 == STEEMIT_MAX_WITNESSES,
 //         "HF17 witness counts must add up to STEEMIT_MAX_WITNESSES" );
 
-//      modify( get_witness_schedule_object(), [&]( witness_schedule_object& wso )
-//      {
-//         wso.max_voted_witnesses = STEEMIT_MAX_VOTED_WITNESSES_HF17;
-//         wso.max_miner_witnesses = STEEMIT_MAX_MINER_WITNESSES_HF17;
-//         wso.max_runner_witnesses = STEEMIT_MAX_RUNNER_WITNESSES_HF17;
-//      });
 
       const auto& gpo = get_dynamic_global_properties();
 
@@ -2155,25 +2148,6 @@ void database::init_genesis( uint64_t init_supply )
       // As a shortcut in payout processing, we use the id as an array index.
       // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
       FC_ASSERT( post_rf.id._id == 0 );
-
-
-//         /* Remove all 0 delegation objects */
-//         vector< const vesting_delegation_object* > to_remove;
-//         const auto& delegation_idx = get_index< vesting_delegation_index, by_id >();
-//         auto delegation_itr = delegation_idx.begin();
-//
-//         while( delegation_itr != delegation_idx.end() )
-//         {
-//            if( delegation_itr->vesting_shares.amount == 0 )
-//               to_remove.push_back( &(*delegation_itr) );
-//
-//            ++delegation_itr;
-//         }
-//
-//         for( const vesting_delegation_object* delegation_ptr: to_remove )
-//         {
-//            remove( *delegation_ptr );
-//         }
    }
    FC_CAPTURE_AND_RETHROW()
 }

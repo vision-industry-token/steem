@@ -5388,8 +5388,8 @@ BOOST_AUTO_TEST_CASE( comment_beneficiaries_apply )
 
       BOOST_REQUIRE( db.get_account( "bob" ).reward_steem_balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "bob" ).reward_vesting_steem.amount + db.get_account( "sam" ).reward_vesting_steem.amount == db.get_comment( "alice", string( "test" ) ).beneficiary_payout_value.amount );
-      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) == db.get_account( "bob" ).reward_vesting_steem.amount + 2 );
-      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) * 2 == db.get_account( "sam" ).reward_vesting_steem.amount + 3 );
+      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) == db.get_account( "bob" ).reward_vesting_steem.amount );
+      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) * 2 == db.get_account( "sam" ).reward_vesting_steem.amount );
    }
    FC_LOG_AND_RETHROW()
 }

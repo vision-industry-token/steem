@@ -27,7 +27,6 @@
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(5))
 
 
-#define STEEMIT_ORIGINAL_MIN_ACCOUNT_CREATION_FEE 0
 #define STEEMIT_MIN_ACCOUNT_CREATION_FEE          0
 
 #define STEEMIT_OWNER_AUTH_RECOVERY_PERIOD                  fc::seconds(60)
@@ -60,8 +59,7 @@
 #define STEEMIT_VOTE_CHANGE_LOCKOUT_PERIOD      (60*60*2)     /// 2 hours
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::hours(12))
 
-#define STEEMIT_ORIGINAL_MIN_ACCOUNT_CREATION_FEE  100000
-#define STEEMIT_MIN_ACCOUNT_CREATION_FEE           0
+#define STEEMIT_MIN_ACCOUNT_CREATION_FEE           1
 
 #define STEEMIT_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
 #define STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
@@ -145,9 +143,6 @@
 #define STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME     fc::days(30)
 
 #define STEEMIT_MINING_REWARD                   asset( 1000, STEEM_SYMBOL )
-
-#define STEEMIT_MIN_CONTENT_REWARD              STEEMIT_MINING_REWARD
-#define STEEMIT_MIN_CURATE_REWARD               STEEMIT_MINING_REWARD
 #define STEEMIT_MIN_PRODUCER_REWARD             STEEMIT_MINING_REWARD
 
 #define STEEMIT_ACTIVE_CHALLENGE_FEE            asset( 2000, STEEM_SYMBOL )
@@ -169,7 +164,7 @@
 #define STEEMIT_MAX_WITNESS_URL_LENGTH          2048
 
 #define STEEMIT_INIT_SUPPLY                     int64_t(4000000000000ll)
-#define STEEMIT_MAX_SHARE_SUPPLY                int64_t(4000000000000000ll) // 1000000000000000ll
+#define STEEMIT_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define STEEMIT_MAX_SIG_CHECK_DEPTH             2
 
 #define STEEMIT_MIN_TRANSACTION_SIZE_LIMIT      1024
@@ -190,13 +185,10 @@
 #define STEEMIT_BLOCKCHAIN_PRECISION_DIGITS     3
 #define STEEMIT_MAX_INSTANCE_ID                 (uint64_t(-1)>>16)
 /** NOTE: making this a power of 2 (say 2^15) would greatly accelerate fee calcs */
-#define STEEMIT_MAX_AUTHORITY_MEMBERSHIP        10
 #define STEEMIT_MAX_ASSET_WHITELIST_AUTHORITIES 10
 #define STEEMIT_MAX_URL_LENGTH                  127
 
 #define STEEMIT_IRREVERSIBLE_THRESHOLD          (75 * STEEMIT_1_PERCENT)
-
-#define VIRTUAL_SCHEDULE_LAP_LENGTH  ( fc::uint128(uint64_t(-1)) )
 #define VIRTUAL_SCHEDULE_LAP_LENGTH2 ( fc::uint128::max_value() )
 
 /**

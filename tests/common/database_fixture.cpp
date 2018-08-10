@@ -59,7 +59,8 @@ clean_database_fixture::clean_database_fixture()
 
    //ahplugin->plugin_startup();
    db_plugin->plugin_startup();
-   vest( "initminer", 10000 );
+   vest( "initminer", 1000000 );
+   generate_block();
 
    // Fill up the rest of the required miners
    for( int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++ )
@@ -118,7 +119,7 @@ void clean_database_fixture::resize_shared_mem( uint64_t size )
    db.set_hardfork( STEEMIT_NUM_HARDFORKS );
    generate_block();
 
-   vest( "initminer", 10000 );
+   vest( "initminer", 1000000 );
 
    // Fill up the rest of the required miners
    for( int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++ )
