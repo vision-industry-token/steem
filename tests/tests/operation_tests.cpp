@@ -1545,8 +1545,6 @@ BOOST_AUTO_TEST_CASE( withdraw_vesting_apply )
             gpo.current_supply += wso.median_props.account_creation_fee - ASSET( "0.001 TESTS" ) - gpo.total_vesting_fund_steem;
             gpo.total_vesting_fund_steem = wso.median_props.account_creation_fee - ASSET( "0.001 TESTS" );
          });
-
-         db.update_virtual_supply();
       }, database::skip_witness_signature );
 
       withdraw_vesting_operation op;
@@ -4821,7 +4819,6 @@ BOOST_AUTO_TEST_CASE( claim_reward_balance_apply )
          db.modify( db.get_dynamic_global_properties(), []( dynamic_global_property_object& gpo )
          {
             gpo.current_supply += ASSET( "20.000 TESTS" );
-            gpo.virtual_supply += ASSET( "20.000 TESTS" );
             gpo.pending_rewarded_vesting_shares += ASSET( "10.000000 VESTS" );
             gpo.pending_rewarded_vesting_steem += ASSET( "10.000 TESTS" );
          });

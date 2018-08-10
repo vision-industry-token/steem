@@ -44,7 +44,6 @@ namespace steemit { namespace chain {
           */
          uint32_t num_pow_witnesses = 0;
 
-         asset       virtual_supply             = asset( 0, STEEM_SYMBOL );
          asset       current_supply             = asset( 0, STEEM_SYMBOL );
          asset       confidential_supply        = asset( 0, STEEM_SYMBOL ); ///< total asset held in confidential balances
          asset       total_vesting_fund_steem   = asset( 0, STEEM_SYMBOL );
@@ -71,8 +70,6 @@ namespace steemit { namespace chain {
             return price( total_vesting_shares + pending_rewarded_vesting_shares,
                total_vesting_fund_steem + pending_rewarded_vesting_steem );
          }
-
-         uint16_t sbd_print_rate = STEEMIT_100_PERCENT;
 
          /**
           *  Maximum block size is decided by the set of active witnesses which change every round.
@@ -125,7 +122,6 @@ FC_REFLECT( steemit::chain::dynamic_global_property_object,
              (time)
              (current_witness)
              (num_pow_witnesses)
-             (virtual_supply)
              (current_supply)
              (confidential_supply)
              (total_vesting_fund_steem)
@@ -134,7 +130,6 @@ FC_REFLECT( steemit::chain::dynamic_global_property_object,
              (total_reward_shares2)
              (pending_rewarded_vesting_shares)
              (pending_rewarded_vesting_steem)
-             (sbd_print_rate)
              (maximum_block_size)
              (current_aslot)
              (recent_slots_filled)

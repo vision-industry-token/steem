@@ -1632,7 +1632,7 @@ void database::process_funds()
    // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
    int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
 
-   auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
+   auto new_steem = ( props.current_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
    auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
    content_reward = pay_reward_funds( content_reward ); /// 72.75% to content creator
    auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
@@ -1658,7 +1658,6 @@ void database::process_funds()
    {
       p.total_vesting_fund_steem += asset( vesting_reward, STEEM_SYMBOL );
       p.current_supply           += asset( new_steem, STEEM_SYMBOL );
-      p.virtual_supply           += asset( new_steem, STEEM_SYMBOL );
    });
 
    const auto& producer_reward = create_vesting( get_account( cwit.owner ), asset( witness_reward, STEEM_SYMBOL ) );
@@ -2065,7 +2064,6 @@ void database::init_genesis( uint64_t init_supply )
          p.recent_slots_filled = fc::uint128::max_value();
          p.participation_count = 128;
          p.current_supply = asset( init_supply, STEEM_SYMBOL );
-         p.virtual_supply = p.current_supply;
          p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
 
          p.total_reward_fund_steem = asset( 0, STEEM_SYMBOL );
@@ -2400,14 +2398,11 @@ void database::_apply_block( const signed_block& next_block )
    clear_expired_delegations();
    update_witness_schedule(*this);
 
-   update_virtual_supply();
-
    clear_null_account_balance();
    process_funds();
    process_comment_cashout();
    process_vesting_withdrawals();
    process_savings_withdraws();
-   update_virtual_supply();
 
    account_recovery_processing();
    expire_escrow_ratification();
@@ -2651,30 +2646,6 @@ void database::update_global_dynamic_data( const signed_block& b )
    }
 } FC_CAPTURE_AND_RETHROW() }
 
-void database::update_virtual_supply()
-{ try {
-   modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& dgp )
-   {
-      dgp.virtual_supply = dgp.current_supply;
-//         + ( get_feed_history().current_median_history.is_null() ? asset( 0, STEEM_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
-//
-//      auto median_price = get_feed_history().current_median_history;
-//
-//      if( !median_price.is_null() )
-//      {
-//         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEMIT_100_PERCENT )
-//            / dgp.virtual_supply.amount.value ).to_uint64() );
-//
-//         if( percent_sbd <= STEEMIT_SBD_START_PERCENT )
-//            dgp.sbd_print_rate = STEEMIT_100_PERCENT;
-//         else if( percent_sbd >= STEEMIT_SBD_STOP_PERCENT )
-//            dgp.sbd_print_rate = 0;
-//         else
-//            dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
-//      }
-   });
-} FC_CAPTURE_AND_RETHROW() }
-
 void database::update_signing_witness(const witness_object& signing_witness, const signed_block& new_block)
 { try {
    const dynamic_global_property_object& dpo = get_dynamic_global_properties();
@@ -2858,7 +2829,6 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
          {
             asset new_vesting( (adjust_vesting && delta.amount > 0) ? delta.amount * 9 : 0, STEEM_SYMBOL );
             props.current_supply += delta + new_vesting;
-            props.virtual_supply += delta + new_vesting;
             props.total_vesting_fund_steem += new_vesting;
             assert( props.current_supply.amount.value >= 0 );
             break;
@@ -3047,13 +3017,6 @@ void database::validate_invariants()const
       FC_ASSERT( gpo.total_vesting_shares + gpo.pending_rewarded_vesting_shares == total_vesting, "", ("gpo.total_vesting_shares",gpo.total_vesting_shares)("total_vesting",total_vesting) );
       FC_ASSERT( gpo.total_vesting_shares.amount == total_vsf_votes, "", ("total_vesting_shares",gpo.total_vesting_shares)("total_vsf_votes",total_vsf_votes) );
       FC_ASSERT( gpo.pending_rewarded_vesting_steem == pending_vesting_steem, "", ("pending_rewarded_vesting_steem",gpo.pending_rewarded_vesting_steem)("pending_vesting_steem", pending_vesting_steem));
-
-      FC_ASSERT( gpo.virtual_supply == gpo.current_supply );
-//      if ( !get_feed_history().current_median_history.is_null() )
-//      {
-//         FC_ASSERT( gpo.current_sbd_supply * get_feed_history().current_median_history + gpo.current_supply
-//            == gpo.virtual_supply, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("get_feed_history().current_median_history",get_feed_history().current_median_history)("gpo.current_supply",gpo.current_supply)("gpo.virtual_supply",gpo.virtual_supply) );
-//      }
    }
    FC_CAPTURE_LOG_AND_RETHROW( (head_block_num()) );
 }
