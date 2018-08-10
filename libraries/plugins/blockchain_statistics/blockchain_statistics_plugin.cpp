@@ -55,16 +55,6 @@ struct operation_process
 
          if( op.amount.symbol == STEEM_SYMBOL )
             b.steem_transferred += op.amount.amount;
-         else
-            b.sbd_transferred += op.amount.amount;
-      });
-   }
-
-   void operator()( const interest_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.sbd_paid_as_interest += op.interest.amount;
       });
    }
 

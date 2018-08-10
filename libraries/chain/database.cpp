@@ -2863,11 +2863,6 @@ void database::adjust_supply( const asset& delta, bool adjust_vesting )
             assert( props.current_supply.amount.value >= 0 );
             break;
          }
-//         case SBD_SYMBOL:
-//            props.current_sbd_supply += delta;
-//            props.virtual_supply = props.current_sbd_supply * get_feed_history().current_median_history + props.current_supply;
-//            assert( props.current_sbd_supply.amount.value >= 0 );
-//            break;
          default:
             FC_ASSERT( false, "invalid symbol" );
       }

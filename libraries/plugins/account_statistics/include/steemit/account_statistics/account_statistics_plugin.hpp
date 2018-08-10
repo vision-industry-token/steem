@@ -75,10 +75,6 @@ struct account_stats_bucket_object : public object< account_stats_bucket_object_
    uint32_t             transfers_from = 0;                       ///< Account to account transfers from this account
    share_type           steem_sent = 0;                           ///< STEEM sent from this account
    share_type           steem_received = 0;                       ///< STEEM received by this account
-   share_type           sbd_sent = 0;                             ///< SBD sent from this account
-   share_type           sbd_received = 0;                         ///< SBD received by this account
-   uint32_t             sbd_interest_payments = 0;                ///< Number of times interest was paid to SBD
-   share_type           sbd_paid_as_interest = 0;                 ///< Amount of SBD paid as interest
    uint32_t             transfers_to_vesting = 0;                 ///< Transfers to vesting by this account. Note: Transfer to vesting from A to B counts as a transfer from A to B followed by a vesting deposit by B.
    share_type           steem_vested = 0;                         ///< STEEM vested by the account
    share_type           new_vests = 0;                            ///< New VESTS by vesting transfers
@@ -178,10 +174,6 @@ FC_REFLECT( steemit::account_statistics::account_stats_bucket_object,
    (transfers_from)
    (steem_sent)
    (steem_received)
-   (sbd_sent)
-   (sbd_received)
-   (sbd_interest_payments)
-   (sbd_paid_as_interest)
    (transfers_to_vesting)
    (steem_vested)
    (new_vests)

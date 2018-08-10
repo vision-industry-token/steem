@@ -13,7 +13,6 @@
 
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< TESTS with 3 digits of precision
-#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24) ) ///< Test Backed Dollars with 3 digits of precision
 #define STMD_SYMBOL   (uint64_t(3) | (uint64_t('T') << 8) | (uint64_t('S') << 16) | (uint64_t('T') << 24) | (uint64_t('D') << 32) ) ///< Test Dollars with 3 digits of precision
 
 #define STEEMIT_SYMBOL                          "TEST"
@@ -49,7 +48,6 @@
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash("vit"))
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('V') << 8) | (uint64_t('I') << 16) | (uint64_t('T') << 24) ) ///< VIT with 3 digits of precision
-#define SBD_SYMBOL    (uint64_t(3) | (uint64_t('V') << 8) | (uint64_t('B') << 16) | (uint64_t('D') << 24) ) ///< VIT Backed Dollars with 3 digits of precision
 #define STMD_SYMBOL   (uint64_t(3) | (uint64_t('V') << 8) | (uint64_t('I') << 16) | (uint64_t('T') << 24) | (uint64_t('D') << 32) ) ///< VIT Dollars with 3 digits of precision
 #define STEEMIT_SYMBOL                          "VIT"
 #define STEEMIT_ADDRESS_PREFIX                  "VIT"
@@ -123,7 +121,6 @@
 #define STEEMIT_100_PERCENT                     10000
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
-#define STEEMIT_DEFAULT_SBD_INTEREST_RATE       (0*STEEMIT_1_PERCENT) ///< 10% APR
 
 #define STEEMIT_INFLATION_RATE_START_PERCENT    (978)
 #define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%

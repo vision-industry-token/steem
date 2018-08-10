@@ -2569,7 +2569,7 @@ BOOST_AUTO_TEST_CASE( escrow_transfer_validate )
       op.escrow_expiration = db.head_block_time() + 200;
 
       BOOST_TEST_MESSAGE( "--- failure when steem symbol != STEEM" );
-      op.steem_amount.symbol = SBD_SYMBOL;
+      op.steem_amount.symbol = VESTS_SYMBOL;
       STEEMIT_REQUIRE_THROW( op.validate(), fc::exception );
 
       BOOST_TEST_MESSAGE( "--- failure when fee symbol != STEEM" );
@@ -3876,11 +3876,6 @@ BOOST_AUTO_TEST_CASE( transfer_to_savings_validate )
       STEEMIT_REQUIRE_THROW( op.validate(), fc::exception );
 
 
-      BOOST_TEST_MESSAGE( "success when amount is SBD" );
-      op.amount = ASSET( "1.000 TBD" );
-      op.validate();
-
-
       BOOST_TEST_MESSAGE( "success when amount is STEEM" );
       op.amount = ASSET( "1.000 TESTS" );
       op.validate();
@@ -4023,11 +4018,6 @@ BOOST_AUTO_TEST_CASE( transfer_from_savings_validate )
       op.to = "alice";
       op.amount = ASSET( "1.000 VESTS" );
       STEEMIT_REQUIRE_THROW( op.validate(), fc::exception );
-
-
-      BOOST_TEST_MESSAGE( "success when amount is SBD" );
-      op.amount = ASSET( "1.000 TBD" );
-      op.validate();
 
 
       BOOST_TEST_MESSAGE( "success when amount is STEEM" );

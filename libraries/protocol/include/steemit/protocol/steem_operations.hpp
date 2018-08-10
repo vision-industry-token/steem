@@ -383,14 +383,11 @@ namespace steemit { namespace protocol {
        *  to tune rate limiting and capacity
        */
       uint32_t          maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
-      uint16_t          sbd_interest_rate  = STEEMIT_DEFAULT_SBD_INTEREST_RATE;
 
       void validate()const
       {
          FC_ASSERT( account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
          FC_ASSERT( maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
-         FC_ASSERT( sbd_interest_rate >= 0 );
-         FC_ASSERT( sbd_interest_rate <= STEEMIT_100_PERCENT );
       }
    };
 
@@ -747,7 +744,7 @@ FC_REFLECT( steemit::protocol::cancel_transfer_from_savings_operation, (from)(re
 FC_REFLECT( steemit::protocol::report_over_production_operation, (reporter)(first_block)(second_block) )
 FC_REFLECT( steemit::protocol::pow2, (input)(pow_summary) )
 FC_REFLECT( steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce) )
-FC_REFLECT( steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) );
+FC_REFLECT( steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size));
 FC_REFLECT( steemit::protocol::account_create_operation,
             (fee)
             (creator)

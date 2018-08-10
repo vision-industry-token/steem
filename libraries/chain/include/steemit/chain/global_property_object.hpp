@@ -47,7 +47,6 @@ namespace steemit { namespace chain {
          asset       virtual_supply             = asset( 0, STEEM_SYMBOL );
          asset       current_supply             = asset( 0, STEEM_SYMBOL );
          asset       confidential_supply        = asset( 0, STEEM_SYMBOL ); ///< total asset held in confidential balances
-         asset       confidential_sbd_supply    = asset( 0, SBD_SYMBOL ); ///< total asset held in confidential balances
          asset       total_vesting_fund_steem   = asset( 0, STEEM_SYMBOL );
          asset       total_vesting_shares       = asset( 0, VESTS_SYMBOL );
          asset       total_reward_fund_steem    = asset( 0, STEEM_SYMBOL );
@@ -72,11 +71,6 @@ namespace steemit { namespace chain {
             return price( total_vesting_shares + pending_rewarded_vesting_shares,
                total_vesting_fund_steem + pending_rewarded_vesting_steem );
          }
-
-         /**
-          *  This property defines the interest rate that SBD deposits receive.
-          */
-         uint16_t sbd_interest_rate = 0;
 
          uint16_t sbd_print_rate = STEEMIT_100_PERCENT;
 
@@ -134,14 +128,12 @@ FC_REFLECT( steemit::chain::dynamic_global_property_object,
              (virtual_supply)
              (current_supply)
              (confidential_supply)
-             (confidential_sbd_supply)
              (total_vesting_fund_steem)
              (total_vesting_shares)
              (total_reward_fund_steem)
              (total_reward_shares2)
              (pending_rewarded_vesting_shares)
              (pending_rewarded_vesting_steem)
-             (sbd_interest_rate)
              (sbd_print_rate)
              (maximum_block_size)
              (current_aslot)
