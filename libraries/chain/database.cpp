@@ -949,57 +949,6 @@ uint32_t database::get_slot_at_time(fc::time_point_sec when)const
 }
 
 /**
- *  Converts STEEM into sbd and adds it to to_account while reducing the STEEM supply
- *  by STEEM and increasing the sbd supply by the specified amount.
- */
-std::pair< asset, asset > database::create_sbd( const account_object& to_account, asset steem, bool to_reward_balance )
-{
-   FC_ASSERT( false, "SBD_SYMBOL is disabled" );
-//   std::pair< asset, asset > assets( asset( 0, SBD_SYMBOL ), asset( 0, STEEM_SYMBOL ) );
-//
-//   try
-//   {
-//      if( steem.amount == 0 )
-//         return assets;
-//
-//      const auto& median_price = get_feed_history().current_median_history;
-//      const auto& gpo = get_dynamic_global_properties();
-//
-//      if( !median_price.is_null() )
-//      {
-//         auto to_sbd = ( gpo.sbd_print_rate * steem.amount ) / STEEMIT_100_PERCENT;
-//         auto to_steem = steem.amount - to_sbd;
-//
-//         auto sbd = asset( to_sbd, STEEM_SYMBOL ) * median_price;
-//
-//         if( to_reward_balance )
-//         {
-//            adjust_reward_balance( to_account, sbd );
-//            adjust_reward_balance( to_account, asset( to_steem, STEEM_SYMBOL ) );
-//         }
-//         else
-//         {
-//            adjust_balance( to_account, sbd );
-//            adjust_balance( to_account, asset( to_steem, STEEM_SYMBOL ) );
-//         }
-//
-//         adjust_supply( asset( -to_sbd, STEEM_SYMBOL ) );
-//         adjust_supply( sbd );
-//         assets.first = sbd;
-//         assets.second = to_steem;
-//      }
-//      else
-//      {
-//         adjust_balance( to_account, steem );
-//         assets.second = steem;
-//      }
-//   }
-//   FC_CAPTURE_LOG_AND_RETHROW( (to_account.name)(steem) )
-//
-//   return assets;
-}
-
-/**
  * @param to_account - the account to receive the new vesting shares
  * @param STEEM - STEEM to be converted to vesting shares
  */
@@ -1184,7 +1133,6 @@ void database::clear_null_account_balance()
 {
    const auto& null_account = get_account( STEEMIT_NULL_ACCOUNT );
    asset total_steem( 0, STEEM_SYMBOL );
-   asset total_sbd( 0, SBD_SYMBOL );
 
    if( null_account.balance.amount > 0 )
    {
@@ -1244,9 +1192,6 @@ void database::clear_null_account_balance()
 
    if( total_steem.amount > 0 )
       adjust_supply( -total_steem );
-
-   if( total_sbd.amount > 0 )
-      adjust_supply( -total_sbd );
 }
 
 /**

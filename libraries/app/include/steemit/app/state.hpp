@@ -59,12 +59,12 @@ namespace steemit { namespace app {
 
       string                      url; /// /category/@rootauthor/root_permlink#author/permlink
       string                      root_title;
-      asset                       pending_payout_value; ///< sbd
-      asset                       total_pending_payout_value; ///< sbd including replies
+      asset                       pending_payout_value; ///< STEEM_SYMBOL
+      asset                       total_pending_payout_value; ///< STEEM_SYMBOL including replies
       vector<vote_state>          active_votes;
       vector<string>              replies; ///< author/slug mapping
       share_type                  author_reputation = 0;
-      asset                       promoted = asset(0, SBD_SYMBOL);
+      asset                       promoted = asset(0, STEEM_SYMBOL);
       uint32_t                    body_length = 0;
       vector<account_name_type>   reblogged_by;
       optional<account_name_type> first_reblogged_by;

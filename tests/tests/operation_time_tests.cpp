@@ -1790,11 +1790,6 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
       transfer1.to = STEEMIT_NULL_ACCOUNT;
       transfer1.amount = ASSET( "1.000 TESTS" );
 
-      transfer_operation transfer2;
-      transfer2.from = "alice";
-      transfer2.to = STEEMIT_NULL_ACCOUNT;
-      transfer2.amount = ASSET( "2.000 TBD" );
-
       transfer_to_vesting_operation vest;
       vest.from = "alice";
       vest.to = STEEMIT_NULL_ACCOUNT;
@@ -1805,19 +1800,12 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
       save1.to = STEEMIT_NULL_ACCOUNT;
       save1.amount = ASSET( "4.000 TESTS" );
 
-      transfer_to_savings_operation save2;
-      save2.from = "alice";
-      save2.to = STEEMIT_NULL_ACCOUNT;
-      save2.amount = ASSET( "5.000 TBD" );
-
       BOOST_TEST_MESSAGE( "--- Transferring to NULL Account" );
 
       signed_transaction tx;
       tx.operations.push_back( transfer1 );
-      tx.operations.push_back( transfer2 );
       tx.operations.push_back( vest );
       tx.operations.push_back( save1);
-      tx.operations.push_back( save2 );
       tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
       tx.sign( alice_private_key, db.get_chain_id() );
       db.push_transaction( tx, 0 );
