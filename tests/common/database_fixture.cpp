@@ -59,7 +59,7 @@ clean_database_fixture::clean_database_fixture()
 
    //ahplugin->plugin_startup();
    db_plugin->plugin_startup();
-   vest( "initminer", 1000000 );
+   vest( "initminer", 1000000000000 );
    generate_block();
 
    // Fill up the rest of the required miners
@@ -225,17 +225,35 @@ const account_object& database_fixture::account_create(
 {
    try
    {
-      account_create_operation op;
-      op.new_account_name = name;
-      op.creator = creator;
-      op.fee = asset( fee, STEEM_SYMBOL );
-      op.owner = authority( 1, key, 1 );
-      op.active = authority( 1, key, 1 );
-      op.posting = authority( 1, post_key, 1 );
-      op.memo_key = key;
-      op.json_metadata = json_metadata;
+//      if( db.has_hardfork( STEEMIT_HARDFORK_0_17 ) )
+//      {
+//         account_create_with_delegation_operation op;
+//         op.new_account_name = name;
+//         op.creator = creator;
+//         op.fee = asset( fee, STEEM_SYMBOL );
+//         op.delegation = asset( 0, VESTS_SYMBOL );
+//         op.owner = authority( 1, key, 1 );
+//         op.active = authority( 1, key, 1 );
+//         op.posting = authority( 1, post_key, 1 );
+//         op.memo_key = key;
+//         op.json_metadata = json_metadata;
+//
+//         trx.operations.push_back( op );
+//      }
+//      else
+//      {
+         account_create_operation op;
+         op.new_account_name = name;
+         op.creator = creator;
+         op.fee = asset( fee, STEEM_SYMBOL );
+         op.owner = authority( 1, key, 1 );
+         op.active = authority( 1, key, 1 );
+         op.posting = authority( 1, post_key, 1 );
+         op.memo_key = key;
+         op.json_metadata = json_metadata;
 
-      trx.operations.push_back( op );
+         trx.operations.push_back( op );
+//      }
 
       trx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
       trx.sign( creator_key, db.get_chain_id() );
@@ -263,7 +281,7 @@ const account_object& database_fixture::account_create(
          name,
          STEEMIT_INIT_MINER_NAME,
          init_account_priv_key,
-         std::max( db.get_witness_schedule_object().median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, share_type( 100 ) ),
+         std::max( db.get_witness_schedule_object().median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, share_type( 30000 ) ),
          key,
          post_key,
          "" );

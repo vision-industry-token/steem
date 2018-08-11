@@ -83,7 +83,10 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
 
       account_create_operation op;
 
-      op.fee = asset( 100, STEEM_SYMBOL );
+
+      const witness_schedule_object& wso = db.get_witness_schedule_object();
+      op.fee = asset( wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL );
+      //op.fee = asset( 3000, STEEM_SYMBOL );
       op.new_account_name = "alice";
       op.creator = STEEMIT_INIT_MINER_NAME;
       op.owner = authority( 1, priv_key.get_public_key(), 1 );
@@ -117,7 +120,7 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
       BOOST_REQUIRE( acct.vesting_shares.amount.value == ( op.fee * ( vest_shares / vests ) ).amount.value );
       BOOST_REQUIRE( acct.vesting_withdraw_rate.amount.value == ASSET( "0.000000 VESTS" ).amount.value );
       BOOST_REQUIRE( acct.proxied_vsf_votes_total().value == 0 );
-      BOOST_REQUIRE( ( init_starting_balance - ASSET( "0.100 TESTS" ) ).amount.value == init.balance.amount.value );
+      BOOST_REQUIRE( ( init_starting_balance - op.fee ).amount.value == init.balance.amount.value );
       validate_database();
 
       BOOST_TEST_MESSAGE( "--- Test failure of duplicate account creation" );
@@ -133,7 +136,7 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
       BOOST_REQUIRE( acct.vesting_shares.amount.value == ( op.fee * ( vest_shares / vests ) ).amount.value );
       BOOST_REQUIRE( acct.vesting_withdraw_rate.amount.value == ASSET( "0.000000 VESTS" ).amount.value );
       BOOST_REQUIRE( acct.proxied_vsf_votes_total().value == 0 );
-      BOOST_REQUIRE( ( init_starting_balance - ASSET( "0.100 TESTS" ) ).amount.value == init.balance.amount.value );
+      BOOST_REQUIRE( ( init_starting_balance - op.fee ).amount.value == init.balance.amount.value );
       validate_database();
 
       BOOST_TEST_MESSAGE( "--- Test failure when creator cannot cover fee" );
@@ -730,11 +733,11 @@ BOOST_AUTO_TEST_CASE( vote_apply )
       ACTORS( (alice)(bob)(sam)(dave) )
       generate_block();
 
-      vest( "alice", ASSET( "10.000 TESTS" ) );
+      vest( "alice", ASSET( "100.000 TESTS" ) );
       validate_database();
-      vest( "bob" , ASSET( "10.000 TESTS" ) );
-      vest( "sam" , ASSET( "10.000 TESTS" ) );
-      vest( "dave" , ASSET( "10.000 TESTS" ) );
+      vest( "bob" , ASSET( "100.000 TESTS" ) );
+      vest( "sam" , ASSET( "100.000 TESTS" ) );
+      vest( "dave" , ASSET( "100.000 TESTS" ) );
       generate_block();
 
       const auto& vote_idx = db.get_index< comment_vote_index >().indices().get< by_comment_voter >();
@@ -4629,8 +4632,8 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_authorities )
      private_key_type priv_key = generate_private_key( "temp_key" );
 
      account_create_with_delegation_operation op;
-     op.fee = ASSET("0.000 TESTS");
-     op.delegation = asset(100, VESTS_SYMBOL);
+     op.fee = ASSET("1.000 TESTS");
+     op.delegation = asset(3000000, VESTS_SYMBOL);
      op.creator = "alice";
      op.new_account_name = "bob";
      op.owner = authority( 1, priv_key.get_public_key(), 1 );

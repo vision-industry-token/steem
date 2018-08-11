@@ -1287,8 +1287,8 @@ BOOST_AUTO_TEST_CASE( vesting_withdraw_route )
 
       auto original_vesting = alice.vesting_shares;
 
-      fund( "alice", 1040000 );
-      vest( "alice", 1040000 );
+      fund( "alice", 104000000 );
+      vest( "alice", 104000000 );
 
       auto withdraw_amount = alice.vesting_shares - original_vesting;
 
