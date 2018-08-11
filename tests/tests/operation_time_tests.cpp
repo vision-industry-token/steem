@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
       std::vector< voter_actor > voters;
 
       authors.emplace_back( "alice", alice_private_key );
-      authors.emplace_back( "bob"  , bob_private_key, ASSET( "0.000 TBD" ) );
+      authors.emplace_back( "bob"  , bob_private_key, ASSET( "0.000 TESTS" ) );
       authors.emplace_back( "dave" , dave_private_key );
       voters.emplace_back( "ulysses", ulysses_private_key, "alice");
       voters.emplace_back( "vivian" , vivian_private_key , "bob"  );
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
       const account_object& bob_account   = db.get_account("bob");
       const account_object& dave_account  = db.get_account("dave");
 
-      BOOST_CHECK( alice_account.reward_steem_balance == ASSET( "13972.000 TESTS" ) );
+      BOOST_CHECK( alice_account.reward_vesting_steem == ASSET( "158.156 TESTS" ) );
       BOOST_CHECK( bob_account.reward_steem_balance == ASSET( "0.000 TESTS" ) );
       BOOST_CHECK( dave_account.reward_steem_balance == alice_account.reward_steem_balance );
    }
@@ -1670,6 +1670,8 @@ BOOST_AUTO_TEST_CASE( comment_freeze )
       vest( "bob", 10000 );
       vest( "sam", 10000 );
       vest( "dave", 10000 );
+
+      generate_block();
 
       signed_transaction tx;
 
