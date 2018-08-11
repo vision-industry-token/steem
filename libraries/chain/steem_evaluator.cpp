@@ -1152,26 +1152,26 @@ void vote_evaluator::do_apply( const vote_operation& o )
 
          if( curation_reward_eligible )
          {
-            if( comment.created < fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME) ) {
-               u512 rshares3(rshares);
-               u256 total2( comment.abs_rshares.value );
-
-               rshares3 = rshares3 * rshares3 * rshares3;
-
-               total2 *= total2;
-               cv.weight = static_cast<uint64_t>( rshares3 / total2 );
-            } else {// cv.weight = W(R_1) - W(R_0)
+//            if( comment.created < fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME) ) {
+//               u512 rshares3(rshares);
+//               u256 total2( comment.abs_rshares.value );
+//
+//               rshares3 = rshares3 * rshares3 * rshares3;
+//
+//               total2 *= total2;
+//               cv.weight = static_cast<uint64_t>( rshares3 / total2 );
+//            } else {// cv.weight = W(R_1) - W(R_0)
                const auto& reward_fund = _db.get_reward_fund( comment );
                auto curve = reward_fund.curation_reward_curve;
                uint64_t old_weight = util::evaluate_reward_curve( old_vote_rshares.value, curve, reward_fund.content_constant ).to_uint64();
                uint64_t new_weight = util::evaluate_reward_curve( comment.vote_rshares.value, curve, reward_fund.content_constant ).to_uint64();
                cv.weight = new_weight - old_weight;
-            }
+//            }
 
             max_vote_weight = cv.weight;
 
-            if( _db.head_block_time() > fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME) )  /// start enforcing this prior to the hardfork
-            {
+//            if( _db.head_block_time() > fc::time_point_sec(STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME) )  /// start enforcing this prior to the hardfork
+//            {
                /// discount weight by time
                uint128_t w(max_vote_weight);
                uint64_t delta_t = std::min( uint64_t((cv.last_update - comment.created).to_seconds()), uint64_t(STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS) );
@@ -1179,7 +1179,7 @@ void vote_evaluator::do_apply( const vote_operation& o )
                w *= delta_t;
                w /= STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS;
                cv.weight = w.to_uint64();
-            }
+//            }
          }
          else
          {

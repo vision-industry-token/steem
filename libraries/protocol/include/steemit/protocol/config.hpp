@@ -38,8 +38,6 @@
 #define STEEMIT_INIT_MINER_NAME                 "initminer"
 
 
-#define STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME (0)
-
 #else // IS LIVE STEEM NETWORK
 
 #define STEEMIT_INIT_PUBLIC_KEY_STR             "VIT6mEDy9EschxGjS1LJhb7zQrbmoWqrkg1n9fGiNfParFmC2mA9a"
@@ -69,7 +67,6 @@
 
 #define STEEMIT_INIT_MINER_NAME                 "vicewitness"
 
-#define STEEMIT_HARDFORK_0_6_REVERSE_AUCTION_TIME (1467295200-(60*60*24*6))
 #define STEEMIT_HF_19_RECENT_CLAIMS (fc::uint128_t(uint64_t(140797515942543623ull)))
 
 #endif
@@ -125,6 +122,7 @@
 #define STEEMIT_INFLATION_NARROWING_PERIOD      (125000) // Narrow 0.01% every 125k blocks
 #define STEEMIT_CONTENT_REWARD_PERCENT          (75*STEEMIT_1_PERCENT) //75% of inflation
 #define STEEMIT_VESTING_FUND_PERCENT            (15*STEEMIT_1_PERCENT) //15% of inflation, 1.425% inflation
+#define STEEMIT_CURATION_REWARD_PERCENT         (40*STEEMIT_1_PERCENT)  // % of STEEMIT_CONTENT_REWARD_PERCENT
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
 #define STEEMIT_MIN_RATION                      100000

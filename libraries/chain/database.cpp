@@ -2134,7 +2134,7 @@ void database::init_genesis( uint64_t init_supply )
          rfo.name = STEEMIT_POST_REWARD_FUND_NAME;
          rfo.last_update = head_block_time();
          rfo.content_constant = STEEMIT_CONTENT_CONSTANT_HF0;
-         rfo.percent_curation_rewards = STEEMIT_1_PERCENT * 25;
+         rfo.percent_curation_rewards = STEEMIT_CURATION_REWARD_PERCENT;
          rfo.percent_content_rewards = STEEMIT_100_PERCENT;
          rfo.reward_balance = gpo.total_reward_fund_steem;
          rfo.author_reward_curve = curve_id::linear;
