@@ -45,7 +45,6 @@ struct statistics
    uint32_t             new_reply_votes = 0;                         ///< New votes on replies
    uint32_t             changed_reply_votes = 0;                     ///< Changed votes on replies
    uint32_t             payouts = 0;                                 ///< Number of comment payouts
-   share_type           sbd_paid_to_authors = 0;                     ///< Ammount of SBD paid to authors
    share_type           vests_paid_to_authors = 0;                   ///< Ammount of VESS paid to authors
    share_type           vests_paid_to_curators = 0;                  ///< Ammount of VESTS paid to curators
    uint32_t             transfers_to_vesting = 0;                    ///< Transfers of STEEM into VESTS
@@ -124,7 +123,6 @@ FC_REFLECT( steemit::blockchain_statistics::statistics,
    (new_reply_votes)
    (changed_reply_votes)
    (payouts)
-   (sbd_paid_to_authors)
    (vests_paid_to_authors)
    (vests_paid_to_curators)
    (transfers_to_vesting)
@@ -136,7 +134,7 @@ FC_REFLECT( steemit::blockchain_statistics::statistics,
    (finished_vesting_withdrawals)
    (vests_withdrawn)
    (vests_transferred)
-
+)
 
 FC_API( steemit::blockchain_statistics::blockchain_statistics_api,
    (get_stats_for_time)

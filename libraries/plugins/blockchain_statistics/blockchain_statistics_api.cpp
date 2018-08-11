@@ -127,7 +127,6 @@ statistics& statistics::operator +=( const bucket_object& b )
    this->new_reply_votes                        += b.new_reply_votes;
    this->changed_reply_votes                    += b.changed_reply_votes;
    this->payouts                                += b.payouts;
-   this->sbd_paid_to_authors                    += b.sbd_paid_to_authors;
    this->vests_paid_to_authors                  += b.vests_paid_to_authors;
    this->vests_paid_to_curators                 += b.vests_paid_to_curators;
    this->transfers_to_vesting                   += b.transfers_to_vesting;
