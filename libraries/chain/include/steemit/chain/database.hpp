@@ -323,6 +323,8 @@ namespace steemit { namespace chain {
          void expire_escrow_ratification();
          void process_decline_voting_rights();
 
+         int64_t get_current_withdraw_max_percent() const;
+
          asset get_pow_reward()const;
 
          uint16_t get_curation_rewards_percent( const comment_object& c ) const;
@@ -358,7 +360,7 @@ namespace steemit { namespace chain {
          std::deque< signed_transaction >       _popped_tx;
 
 
-         void perform_vesting_share_split( uint32_t magnitude );
+//         void perform_vesting_share_split( uint32_t magnitude );
          void retally_comment_children();
          void retally_witness_votes();
          void retally_witness_vote_counts( bool force = false );

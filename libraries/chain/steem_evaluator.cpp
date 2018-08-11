@@ -790,16 +790,8 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 
    if( o.vesting_shares.amount < 0 )
    {
-      // TODO: Update this to a HF 20 check
-#ifndef IS_TEST_NET
-      if( _db.head_block_num() > 23847548 )
-      {
-#endif
-         FC_ASSERT( false, "Cannot withdraw negative VESTS. account: ${account}, vests:${vests}",
-            ("account", o.account)("vests", o.vesting_shares) );
-#ifndef IS_TEST_NET
-      }
-#endif
+      FC_ASSERT( false, "Cannot withdraw negative VESTS. account: ${account}, vests:${vests}",
+         ("account", o.account)("vests", o.vesting_shares) );
 
       // else, no-op
       return;
@@ -807,6 +799,17 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 
    FC_ASSERT( account.vesting_shares >= asset( 0, VESTS_SYMBOL ), "Account does not have sufficient Steem Power for withdraw." );
    FC_ASSERT( account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares, "Account does not have sufficient Steem Power for withdraw." );
+
+
+#ifndef IS_TEST_NET
+   // not allowing to withdraw more than current threshold
+   int64_t current_withdraw_max_percent = _db.get_current_withdraw_max_percent();
+   int64_t threshold = (_db.get_current_withdraw_max_percent() * account.vesting_shares.amount / STEEMIT_100_PERCENT);
+   FC_ASSERT( o.vesting_shares.amount <= threshold, "Cannot withdraw more than current threshold ${threshold} or (${percent} percent)",
+              ("threshold", asset( 0, threshold ))
+              ("percent", int64_t(current_withdraw_max_percent / STEEMIT_100_PERCENT)) );
+#endif
+
 
    if( !account.mined )
    {
