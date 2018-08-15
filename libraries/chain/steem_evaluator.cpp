@@ -804,9 +804,9 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 #ifndef IS_TEST_NET
    // not allowing to withdraw more than current threshold
    int64_t current_withdraw_max_percent = _db.get_current_withdraw_max_percent();
-   int64_t threshold = (_db.get_current_withdraw_max_percent() * account.vesting_shares.amount / STEEMIT_100_PERCENT);
+   share_type threshold = (_db.get_current_withdraw_max_percent() * account.vesting_shares.amount / STEEMIT_100_PERCENT);
    FC_ASSERT( o.vesting_shares.amount <= threshold, "Cannot withdraw more than current threshold ${threshold} or (${percent} percent)",
-              ("threshold", asset( 0, threshold ))
+              ("threshold", asset( threshold, VESTS_SYMBOL ))
               ("percent", int64_t(current_withdraw_max_percent / STEEMIT_100_PERCENT)) );
 #endif
 
