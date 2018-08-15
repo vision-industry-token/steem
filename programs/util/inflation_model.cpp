@@ -1,5 +1,5 @@
 
-#include <steemit/chain/compound.hpp>
+//#include <steemit/chain/compound.hpp>
 #include <steemit/protocol/asset.hpp>
 #include <steemit/protocol/types.hpp>
 
