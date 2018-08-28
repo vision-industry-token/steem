@@ -7,6 +7,21 @@
 
 namespace steemit { namespace protocol {
 
+   // This is `no operation` which does nothing
+   struct no_operation_00 : public virtual_operation {  no_operation_00(){} };
+   struct no_operation_01 : public virtual_operation {  no_operation_01(){} };
+   struct no_operation_02 : public virtual_operation {  no_operation_02(){} };
+   struct no_operation_03 : public virtual_operation {  no_operation_03(){} };
+   struct no_operation_04 : public virtual_operation {  no_operation_04(){} };
+   struct no_operation_05 : public virtual_operation {  no_operation_05(){} };
+   struct no_operation_06 : public virtual_operation {  no_operation_06(){} };
+   struct no_operation_07 : public virtual_operation {  no_operation_07(){} };
+   struct no_operation_08 : public virtual_operation {  no_operation_08(){} };
+   struct no_operation_09 : public virtual_operation {  no_operation_09(){} };
+   struct no_operation_10 : public virtual_operation {  no_operation_10(){} };
+   struct no_operation_11 : public virtual_operation {  no_operation_11(){} };
+   struct no_operation_12 : public virtual_operation {  no_operation_12(){} };
+
    struct author_reward_operation : public virtual_operation {
       author_reward_operation(){}
       author_reward_operation( const account_name_type& a, const string& p, const asset& v )
@@ -125,6 +140,20 @@ namespace steemit { namespace protocol {
    };
 
 } } //steemit::protocol
+
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_00)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_01)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_02)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_03)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_04)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_05)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_06)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_07)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_08)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_09)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_10)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_11)
+FC_REFLECT_EMPTY( steemit::protocol::no_operation_12)
 
 FC_REFLECT( steemit::protocol::author_reward_operation, (author)(permlink)(vesting_payout) )
 FC_REFLECT( steemit::protocol::curation_reward_operation, (curator)(reward)(comment_author)(comment_permlink) )
