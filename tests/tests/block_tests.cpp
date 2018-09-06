@@ -240,6 +240,7 @@ BOOST_AUTO_TEST_CASE( switch_forks_undo_create )
       //*
       signed_transaction trx;
       account_create_operation cop;
+      cop.fee = asset( db1.get_witness_schedule_object().median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL );
       cop.new_account_name = "alice";
       cop.creator = STEEMIT_INIT_MINER_NAME;
       cop.owner = authority(1, init_account_pub_key, 1);
@@ -300,6 +301,7 @@ BOOST_AUTO_TEST_CASE( duplicate_transactions )
 
       signed_transaction trx;
       account_create_operation cop;
+      cop.fee = asset( db1.get_witness_schedule_object().median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL );
       cop.new_account_name = "alice";
       cop.creator = STEEMIT_INIT_MINER_NAME;
       cop.owner = authority(1, init_account_pub_key, 1);
@@ -354,6 +356,7 @@ BOOST_AUTO_TEST_CASE( tapos )
       trx.set_reference_block( db1.head_block_id() );
 
       account_create_operation cop;
+      cop.fee = asset( db1.get_witness_schedule_object().median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL );
       cop.new_account_name = "alice";
       cop.creator = STEEMIT_INIT_MINER_NAME;
       cop.owner = authority(1, init_account_pub_key, 1);
