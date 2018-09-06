@@ -125,12 +125,6 @@ class wallet_api
        */
       vector<applied_operation>           get_ops_in_block( uint32_t block_num, bool only_virtual = true );
 
-      /** Return the current price feed history
-       *
-       * @returns Price feed history data on the blockchain
-       */
-      feed_history_api_obj                 get_feed_history()const;
-
       /**
        * Returns the list of witnesses producing blocks in the current round (21 Blocks)
        */
@@ -541,15 +535,6 @@ class wallet_api
        */
       optional< witness_api_obj > get_witness(string owner_account);
 
-      /** Returns conversion requests by an account
-       *
-       * @param owner Account name of the account owning the requests
-       *
-       * @returns All pending conversion requests by account
-       */
-      vector<convert_request_api_obj> get_conversion_requests( string owner );
-
-
       /**
        * Update a witness object owned by the given account.
        *
@@ -618,7 +603,6 @@ class wallet_api
        * @param to The account the funds are going to
        * @param agent The account acting as the agent in case of dispute
        * @param escrow_id A unique id for the escrow transfer. (from, escrow_id) must be a unique pair
-       * @param sbd_amount The amount of SBD to transfer
        * @param steem_amount The amount of STEEM to transfer
        * @param fee The fee paid to the agent
        * @param ratification_deadline The deadline for 'to' and 'agent' to approve the escrow transfer
@@ -631,7 +615,6 @@ class wallet_api
          string to,
          string agent,
          uint32_t escrow_id,
-         asset sbd_amount,
          asset steem_amount,
          asset fee,
          time_point_sec ratification_deadline,
@@ -690,7 +673,6 @@ class wallet_api
        * @param who The account authorizing the release
        * @param receiver The account that will receive funds being released
        * @param escrow_id A unique id for the escrow transfer
-       * @param sbd_amount The amount of SBD that will be released
        * @param steem_amount The amount of STEEM that will be released
        * @param broadcast true if you wish to broadcast the transaction
        */
@@ -701,7 +683,6 @@ class wallet_api
          string who,
          string receiver,
          uint32_t escrow_id,
-         asset sbd_amount,
          asset steem_amount,
          bool broadcast = false
       );
@@ -759,25 +740,6 @@ class wallet_api
        */
       annotated_signed_transaction set_withdraw_vesting_route( string from, string to, uint16_t percent, bool auto_vest, bool broadcast = false );
 
-      /**
-       *  This method will convert SBD to STEEM at the current_median_history price one
-       *  week from the time it is executed. This method depends upon there being a valid price feed.
-       *
-       *  @param from The account requesting conversion of its SBD i.e. "1.000 SBD"
-       *  @param amount The amount of SBD to convert
-       *  @param broadcast true if you wish to broadcast the transaction
-       */
-      annotated_signed_transaction convert_sbd( string from, asset amount, bool broadcast = false );
-
-      /**
-       * A witness can public a price feed for the STEEM:SBD market. The median price feed is used
-       * to process conversion requests from SBD to STEEM.
-       *
-       * @param witness The witness publishing the price feed
-       * @param exchange_rate The desired exchange rate
-       * @param broadcast true if you wish to broadcast the transaction
-       */
-      annotated_signed_transaction publish_feed(string witness, price exchange_rate, bool broadcast );
 
       /** Signs a transaction.
        *
@@ -809,36 +771,6 @@ class wallet_api
 
       void network_add_nodes( const vector<string>& nodes );
       vector< variant > network_get_connected_peers();
-
-      /**
-       * Gets the current order book for STEEM:SBD
-       *
-       * @param limit Maximum number of orders to return for bids and asks. Max is 1000.
-       */
-      order_book  get_order_book( uint32_t limit = 1000 );
-      vector<extended_limit_order>  get_open_orders( string accountname );
-
-      /**
-       *  Creates a limit order at the price amount_to_sell / min_to_receive and will deduct amount_to_sell from account
-       *
-       *  @param owner The name of the account creating the order
-       *  @param order_id is a unique identifier assigned by the creator of the order, it can be reused after the order has been filled
-       *  @param amount_to_sell The amount of either SBD or STEEM you wish to sell
-       *  @param min_to_receive The amount of the other asset you will receive at a minimum
-       *  @param fill_or_kill true if you want the order to be killed if it cannot immediately be filled
-       *  @param expiration the time the order should expire if it has not been filled
-       *  @param broadcast true if you wish to broadcast the transaction
-       */
-      annotated_signed_transaction create_order( string owner, uint32_t order_id, asset amount_to_sell, asset min_to_receive, bool fill_or_kill, uint32_t expiration, bool broadcast );
-
-      /**
-       * Cancel an order created with create_order
-       *
-       * @param owner The name of the account owning the order to cancel_order
-       * @param orderid The unique identifier assigned to the order by its creator
-       * @param broadcast true if you wish to broadcast the transaction
-       */
-      annotated_signed_transaction cancel_order( string owner, uint32_t orderid, bool broadcast );
 
       /**
        *  Post or update a comment.
@@ -973,7 +905,7 @@ class wallet_api
 
       annotated_signed_transaction decline_voting_rights( string account, bool decline, bool broadcast );
 
-      annotated_signed_transaction claim_reward_balance( string account, asset reward_steem, asset reward_sbd, asset reward_vests, bool broadcast );
+      annotated_signed_transaction claim_reward_balance( string account, asset reward_steem, asset reward_vests, bool broadcast );
 };
 
 struct plain_keys {
@@ -1019,8 +951,6 @@ FC_API( steemit::wallet::wallet_api,
         (get_account)
         (get_block)
         (get_ops_in_block)
-        (get_feed_history)
-        (get_conversion_requests)
         (get_account_history)
         (get_state)
         (get_withdraw_routes)
@@ -1049,12 +979,6 @@ FC_API( steemit::wallet::wallet_api,
         (transfer_to_vesting)
         (withdraw_vesting)
         (set_withdraw_vesting_route)
-        (convert_sbd)
-        (publish_feed)
-        (get_order_book)
-        (get_open_orders)
-        (create_order)
-        (cancel_order)
         (post_comment)
         (vote)
         (set_transaction_expiration)

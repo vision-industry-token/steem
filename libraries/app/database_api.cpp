@@ -60,9 +60,6 @@ class database_api_impl : public std::enable_shared_from_this<database_api_impl>
       set<account_name_type> lookup_witness_accounts(const string& lower_bound_name, uint32_t limit)const;
       uint64_t get_witness_count()const;
 
-      // Market
-      order_book get_order_book( uint32_t limit )const;
-      vector< liquidity_balance > get_liquidity_queue( string start_account, uint32_t limit )const;
 
       // Authority / validation
       std::string get_transaction_hex(const signed_transaction& trx)const;
@@ -263,22 +260,6 @@ chain_properties database_api::get_chain_properties()const
    return my->_db.with_read_lock( [&]()
    {
       return my->_db.get_witness_schedule_object().median_props;
-   });
-}
-
-feed_history_api_obj database_api::get_feed_history()const
-{
-   return my->_db.with_read_lock( [&]()
-   {
-      return feed_history_api_obj( my->_db.get_feed_history() );
-   });
-}
-
-price database_api::get_current_median_history_price()const
-{
-   return my->_db.with_read_lock( [&]()
-   {
-      return my->_db.get_feed_history().current_median_history;
    });
 }
 
@@ -715,130 +696,6 @@ uint64_t database_api_impl::get_witness_count()const
    return _db.get_index<witness_index>().indices().size();
 }
 
-//////////////////////////////////////////////////////////////////////
-//                                                                  //
-// Market                                                           //
-//                                                                  //
-//////////////////////////////////////////////////////////////////////
-
-order_book database_api::get_order_book( uint32_t limit )const
-{
-   return my->_db.with_read_lock( [&]()
-   {
-      return my->get_order_book( limit );
-   });
-}
-
-vector<extended_limit_order> database_api::get_open_orders( string owner )const
-{
-   return my->_db.with_read_lock( [&]()
-   {
-      vector<extended_limit_order> result;
-      const auto& idx = my->_db.get_index<limit_order_index>().indices().get<by_account>();
-      auto itr = idx.lower_bound( owner );
-      while( itr != idx.end() && itr->seller == owner ) {
-         result.push_back( *itr );
-
-         if( itr->sell_price.base.symbol == STEEM_SYMBOL )
-            result.back().real_price = (~result.back().sell_price).to_real();
-         else
-            result.back().real_price = (result.back().sell_price).to_real();
-         ++itr;
-      }
-      return result;
-   });
-}
-
-order_book database_api_impl::get_order_book( uint32_t limit )const
-{
-   FC_ASSERT( limit <= 1000 );
-   order_book result;
-
-   auto max_sell = price::max( SBD_SYMBOL, STEEM_SYMBOL );
-   auto max_buy = price::max( STEEM_SYMBOL, SBD_SYMBOL );
-
-   const auto& limit_price_idx = _db.get_index<limit_order_index>().indices().get<by_price>();
-   auto sell_itr = limit_price_idx.lower_bound(max_sell);
-   auto buy_itr  = limit_price_idx.lower_bound(max_buy);
-   auto end = limit_price_idx.end();
-//   idump((max_sell)(max_buy));
-//   if( sell_itr != end ) idump((*sell_itr));
-//   if( buy_itr != end ) idump((*buy_itr));
-
-   while(  sell_itr != end && sell_itr->sell_price.base.symbol == SBD_SYMBOL && result.bids.size() < limit )
-   {
-      auto itr = sell_itr;
-      order cur;
-      cur.order_price = itr->sell_price;
-      cur.real_price  = (cur.order_price).to_real();
-      cur.sbd = itr->for_sale;
-      cur.steem = ( asset( itr->for_sale, SBD_SYMBOL ) * cur.order_price ).amount;
-      cur.created = itr->created;
-      result.bids.push_back( cur );
-      ++sell_itr;
-   }
-   while(  buy_itr != end && buy_itr->sell_price.base.symbol == STEEM_SYMBOL && result.asks.size() < limit )
-   {
-      auto itr = buy_itr;
-      order cur;
-      cur.order_price = itr->sell_price;
-      cur.real_price  = (~cur.order_price).to_real();
-      cur.steem   = itr->for_sale;
-      cur.sbd     = ( asset( itr->for_sale, STEEM_SYMBOL ) * cur.order_price ).amount;
-      cur.created = itr->created;
-      result.asks.push_back( cur );
-      ++buy_itr;
-   }
-
-
-   return result;
-}
-
-vector< liquidity_balance > database_api::get_liquidity_queue( string start_account, uint32_t limit )const
-{
-   return my->_db.with_read_lock( [&]()
-   {
-      return my->get_liquidity_queue( start_account, limit );
-   });
-}
-
-vector< liquidity_balance > database_api_impl::get_liquidity_queue( string start_account, uint32_t limit )const
-{
-   FC_ASSERT( limit <= 1000 );
-
-   const auto& liq_idx = _db.get_index< liquidity_reward_balance_index >().indices().get< by_volume_weight >();
-   auto itr = liq_idx.begin();
-   vector< liquidity_balance > result;
-
-   result.reserve( limit );
-
-   if( start_account.length() )
-   {
-      const auto& liq_by_acc = _db.get_index< liquidity_reward_balance_index >().indices().get< by_owner >();
-      auto acc = liq_by_acc.find( _db.get_account( start_account ).id );
-
-      if( acc != liq_by_acc.end() )
-      {
-         itr = liq_idx.find( boost::make_tuple( acc->weight, acc->owner ) );
-      }
-      else
-      {
-         itr = liq_idx.end();
-      }
-   }
-
-   while( itr != liq_idx.end() && result.size() < limit )
-   {
-      liquidity_balance bal;
-      bal.account = _db.get(itr->owner).name;
-      bal.weight = itr->weight;
-      result.push_back( bal );
-
-      ++itr;
-   }
-
-   return result;
-}
 
 //////////////////////////////////////////////////////////////////////
 //                                                                  //
@@ -964,21 +821,6 @@ bool database_api_impl::verify_account_authority( const string& name, const flat
    return verify_authority( trx );
 }
 
-vector<convert_request_api_obj> database_api::get_conversion_requests( const string& account )const
-{
-   return my->_db.with_read_lock( [&]()
-   {
-      const auto& idx = my->_db.get_index< convert_request_index >().indices().get< by_owner >();
-      vector< convert_request_api_obj > result;
-      auto itr = idx.lower_bound(account);
-      while( itr != idx.end() && itr->owner == account ) {
-         result.push_back(*itr);
-         ++itr;
-      }
-      return result;
-   });
-}
-
 discussion database_api::get_content( string author, string permlink )const
 {
    return my->_db.with_read_lock( [&]()
@@ -1072,37 +914,18 @@ void database_api::set_pending_payout( discussion& d )const
       const auto& cidx = my->_db.get_index<tags::tag_index>().indices().get<tags::by_comment>();
       auto itr = cidx.lower_bound( d.id );
       if( itr != cidx.end() && itr->comment == d.id )  {
-         d.promoted = asset( itr->promoted_balance, SBD_SYMBOL );
+         d.promoted = asset( itr->promoted_balance, STEEM_SYMBOL );
       }
    }
 
-   const auto& props = my->_db.get_dynamic_global_properties();
-   const auto& hist  = my->_db.get_feed_history();
-
-   asset pot;
-   if( my->_db.has_hardfork( STEEMIT_HARDFORK_0_17__774 ) )
-      pot = my->_db.get_reward_fund( my->_db.get_comment( d.author, d.permlink ) ).reward_balance;
-   else
-      pot = props.total_reward_fund_steem;
-
-   if( !hist.current_median_history.is_null() ) pot = pot * hist.current_median_history;
-
-   u256 total_r2 = 0;
-   if( my->_db.has_hardfork( STEEMIT_HARDFORK_0_17__774 ) )
-      total_r2 = to256( my->_db.get_reward_fund( my->_db.get_comment( d.author, d.permlink ) ).recent_claims );
-   else
-      total_r2 = to256( props.total_reward_shares2 );
+   asset pot = my->_db.get_reward_fund( my->_db.get_comment( d.author, d.permlink ) ).reward_balance;
+   u256 total_r2 = to256( my->_db.get_reward_fund( my->_db.get_comment( d.author, d.permlink ) ).recent_claims );
 
    if( total_r2 > 0 )
    {
-      uint128_t vshares;
-      if( my->_db.has_hardfork( STEEMIT_HARDFORK_0_17__774 ) )
-      {
-         const auto& rf = my->_db.get_reward_fund( my->_db.get_comment( d.author, d.permlink ) );
-         vshares = d.net_rshares.value > 0 ? steemit::chain::util::evaluate_reward_curve( d.net_rshares.value, rf.author_reward_curve, rf.content_constant ) : 0;
-      }
-      else
-         vshares = d.net_rshares.value > 0 ? steemit::chain::util::evaluate_reward_curve( d.net_rshares.value ) : 0;
+      const auto& rf = my->_db.get_reward_fund( my->_db.get_comment( d.author, d.permlink ) );
+      uint128_t vshares = d.net_rshares.value > 0 ? steemit::chain::util::evaluate_reward_curve( d.net_rshares.value, rf.author_reward_curve, rf.content_constant ) : 0;
+
 
       u256 r2 = to256(vshares); //to256(abs_net_rshares);
       r2 *= pot.amount.value;
@@ -1343,7 +1166,7 @@ vector<discussion> database_api::get_discussions( const discussion_query& query,
       try
       {
          result.push_back( get_discussion( tidx_itr->comment, truncate_body ) );
-         result.back().promoted = asset(tidx_itr->promoted_balance, SBD_SYMBOL );
+         result.back().promoted = asset(tidx_itr->promoted_balance, STEEM_SYMBOL );
 
          if( filter( result.back() ) )
          {
@@ -1948,7 +1771,6 @@ state database_api::get_state( string path )const
       state _state;
       _state.props         = get_dynamic_global_properties();
       _state.current_route = path;
-      _state.feed_price    = get_current_median_history_price();
 
       try {
       if( path.size() && path[0] == '/' )
@@ -1989,9 +1811,7 @@ state database_api::get_state( string path )const
                switch( item.second.op.which() ) {
                   case operation::tag<transfer_to_vesting_operation>::value:
                   case operation::tag<withdraw_vesting_operation>::value:
-                  case operation::tag<interest_operation>::value:
                   case operation::tag<transfer_operation>::value:
-                  case operation::tag<liquidity_reward_operation>::value:
                   case operation::tag<author_reward_operation>::value:
                   case operation::tag<curation_reward_operation>::value:
                   case operation::tag<comment_benefactor_reward_operation>::value:
@@ -2002,17 +1822,11 @@ state database_api::get_state( string path )const
                   case operation::tag<escrow_approve_operation>::value:
                   case operation::tag<escrow_dispute_operation>::value:
                   case operation::tag<escrow_release_operation>::value:
-                  case operation::tag<fill_convert_request_operation>::value:
-                  case operation::tag<fill_order_operation>::value:
                   case operation::tag<claim_reward_balance_operation>::value:
                      eacnt.transfer_history[item.first] =  item.second;
                      break;
                   case operation::tag<comment_operation>::value:
                   //   eacnt.post_history[item.first] =  item.second;
-                     break;
-                  case operation::tag<limit_order_create_operation>::value:
-                  case operation::tag<limit_order_cancel_operation>::value:
-                  //   eacnt.market_history[item.first] =  item.second;
                      break;
                   case operation::tag<vote_operation>::value:
                   case operation::tag<account_witness_vote_operation>::value:
@@ -2022,7 +1836,6 @@ state database_api::get_state( string path )const
                   case operation::tag<account_create_operation>::value:
                   case operation::tag<account_update_operation>::value:
                   case operation::tag<witness_update_operation>::value:
-                  case operation::tag<pow_operation>::value:
                   case operation::tag<custom_operation>::value:
                   case operation::tag<producer_reward_operation>::value:
                   default:

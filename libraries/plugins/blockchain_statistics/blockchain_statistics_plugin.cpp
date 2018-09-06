@@ -55,16 +55,6 @@ struct operation_process
 
          if( op.amount.symbol == STEEM_SYMBOL )
             b.steem_transferred += op.amount.amount;
-         else
-            b.sbd_transferred += op.amount.amount;
-      });
-   }
-
-   void operator()( const interest_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.sbd_paid_as_interest += op.interest.amount;
       });
    }
 
@@ -73,30 +63,6 @@ struct operation_process
       _db.modify( _bucket, [&]( bucket_object& b )
       {
          b.paid_accounts_created++;
-      });
-   }
-
-   void operator()( const pow_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         auto& worker = _db.get_account( op.worker_account );
-
-         if( worker.created == _db.head_block_time() )
-            b.mined_accounts_created++;
-
-         b.total_pow++;
-
-         uint64_t bits = ( _db.get_dynamic_global_properties().num_pow_witnesses / 4 ) + 4;
-         uint128_t estimated_hashes = ( 1 << bits );
-         uint32_t delta_t;
-
-         if( b.seconds == 0 )
-            delta_t = _db.head_block_time().sec_since_epoch() - b.open.sec_since_epoch();
-         else
-         	delta_t = b.seconds;
-
-         b.estimated_hashpower = ( b.estimated_hashpower * delta_t + estimated_hashes ) / delta_t;
       });
    }
 
@@ -154,7 +120,6 @@ struct operation_process
       _db.modify( _bucket, [&]( bucket_object& b )
       {
          b.payouts++;
-         b.sbd_paid_to_authors += op.sbd_payout.amount;
          b.vests_paid_to_authors += op.vesting_payout.amount;
       });
    }
@@ -164,14 +129,6 @@ struct operation_process
       _db.modify( _bucket, [&]( bucket_object& b )
       {
          b.vests_paid_to_curators += op.reward.amount;
-      });
-   }
-
-   void operator()( const liquidity_reward_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.liquidity_rewards_paid += op.payout.amount;
       });
    }
 
@@ -198,48 +155,6 @@ struct operation_process
 
          if( account.vesting_withdraw_rate.amount == 0 )
             b.finished_vesting_withdrawals++;
-      });
-   }
-
-   void operator()( const limit_order_create_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.limit_orders_created++;
-      });
-   }
-
-   void operator()( const fill_order_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.limit_orders_filled += 2;
-      });
-   }
-
-   void operator()( const limit_order_cancel_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.limit_orders_cancelled++;
-      });
-   }
-
-   void operator()( const convert_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.sbd_conversion_requests_created++;
-         b.sbd_to_be_converted += op.amount.amount;
-      });
-   }
-
-   void operator()( const fill_convert_request_operation& op )const
-   {
-      _db.modify( _bucket, [&]( bucket_object& b )
-      {
-         b.sbd_conversion_requests_filled++;
-         b.steem_converted += op.amount_out.amount;
       });
    }
 };
@@ -361,8 +276,6 @@ void blockchain_statistics_plugin_impl::pre_operation( const operation_notificat
          if( op.vesting_shares.amount > 0 && new_vesting_withdrawal_rate == 0 )
             new_vesting_withdrawal_rate = 1;
 
-         if( !db.has_hardfork( STEEMIT_HARDFORK_0_1 ) )
-            new_vesting_withdrawal_rate *= 1000000;
 
          db.modify( bucket, [&]( bucket_object& b )
          {

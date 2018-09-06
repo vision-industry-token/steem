@@ -40,12 +40,6 @@ struct order
    fc::time_point_sec   created;
 };
 
-struct order_book
-{
-   vector< order >      asks;
-   vector< order >      bids;
-};
-
 struct api_context;
 
 struct scheduled_hardfork
@@ -173,8 +167,6 @@ class database_api
        */
       dynamic_global_property_api_obj  get_dynamic_global_properties()const;
       chain_properties                 get_chain_properties()const;
-      price                            get_current_median_history_price()const;
-      feed_history_api_obj             get_feed_history()const;
       witness_schedule_api_obj         get_witness_schedule()const;
       hardfork_version                 get_hardfork_version()const;
       scheduled_hardfork               get_next_scheduled_hardfork()const;
@@ -248,8 +240,6 @@ class database_api
        */
       vector<optional<witness_api_obj>> get_witnesses(const vector<witness_id_type>& witness_ids)const;
 
-      vector<convert_request_api_obj> get_conversion_requests( const string& account_name )const;
-
       /**
        * @brief Get the witness owned by a given account
        * @param account The name of the account whose witness should be retrieved
@@ -277,23 +267,6 @@ class database_api
        */
       uint64_t get_witness_count()const;
 
-      ////////////
-      // Market //
-      ////////////
-
-      /**
-       * @breif Gets the current order book for STEEM:SBD market
-       * @param limit Maximum number of orders for each side of the spread to return -- Must not exceed 1000
-       */
-      order_book get_order_book( uint32_t limit = 1000 )const;
-      vector<extended_limit_order> get_open_orders( string owner )const;
-
-      /**
-       * @breif Gets the current liquidity reward queue.
-       * @param start_account The account to start the list from, or "" to get the head of the queue
-       * @param limit Maxmimum number of accounts to return -- Must not exceed 1000
-       */
-      vector< liquidity_balance > get_liquidity_queue( string start_account, uint32_t limit = 1000 )const;
 
       ////////////////////////////
       // Authority / validation //
@@ -438,7 +411,6 @@ class database_api
 } }
 
 FC_REFLECT( steemit::app::order, (order_price)(real_price)(steem)(sbd)(created) );
-FC_REFLECT( steemit::app::order_book, (asks)(bids) );
 FC_REFLECT( steemit::app::scheduled_hardfork, (hf_version)(live_time) );
 FC_REFLECT( steemit::app::liquidity_balance, (account)(weight) );
 FC_REFLECT( steemit::app::withdraw_route, (from_account)(to_account)(percent)(auto_vest) );
@@ -479,8 +451,6 @@ FC_API(steemit::app::database_api,
    (get_config)
    (get_dynamic_global_properties)
    (get_chain_properties)
-   (get_feed_history)
-   (get_current_median_history_price)
    (get_witness_schedule)
    (get_hardfork_version)
    (get_next_scheduled_hardfork)
@@ -495,7 +465,6 @@ FC_API(steemit::app::database_api,
    (lookup_account_names)
    (lookup_accounts)
    (get_account_count)
-   (get_conversion_requests)
    (get_account_history)
    (get_owner_history)
    (get_recovery_request)
@@ -506,11 +475,6 @@ FC_API(steemit::app::database_api,
    (get_savings_withdraw_to)
    (get_vesting_delegations)
    (get_expiring_vesting_delegations)
-
-   // Market
-   (get_order_book)
-   (get_open_orders)
-   (get_liquidity_queue)
 
    // Authority / validation
    (get_transaction_hex)

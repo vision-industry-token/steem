@@ -119,16 +119,13 @@ namespace steemit { namespace protocol {
     *  operation allows authors to update properties associated with their post.
     *
     *  The max_accepted_payout may be decreased, but never increased.
-    *  The percent_steem_dollars may be decreased, but never increased
-    *
     */
    struct comment_options_operation : public base_operation
    {
       account_name_type author;
       string            permlink;
 
-      asset             max_accepted_payout    = asset( 1000000000, SBD_SYMBOL );       /// SBD value of the maximum payout this post will receive
-      uint16_t          percent_steem_dollars  = STEEMIT_100_PERCENT; /// the percent of Steem Dollars to key, unkept amounts will be received as Steem Power
+      asset             max_accepted_payout    = asset( 1000000000, STEEM_SYMBOL );       /// STEEM_SYMBOL value of the maximum payout this post will receive
       bool              allow_votes            = true;      /// allows a post to receive votes;
       bool              allow_curation_rewards = true; /// allows voters to recieve curation rewards. Rewards return to reward fund.
       comment_options_extensions_type extensions;
@@ -231,7 +228,6 @@ namespace steemit { namespace protocol {
       account_name_type agent;
       uint32_t          escrow_id = 30;
 
-      asset             sbd_amount = asset( 0, SBD_SYMBOL );
       asset             steem_amount = asset( 0, STEEM_SYMBOL );
       asset             fee;
 
@@ -303,7 +299,6 @@ namespace steemit { namespace protocol {
       account_name_type receiver; ///< the account that should receive funds (might be from, might be to)
 
       uint32_t          escrow_id = 30;
-      asset             sbd_amount = asset( 0, SBD_SYMBOL ); ///< the amount of sbd to release
       asset             steem_amount = asset( 0, STEEM_SYMBOL ); ///< the amount of steem to release
 
       void validate()const;
@@ -381,22 +376,18 @@ namespace steemit { namespace protocol {
        *  fee requires all accounts to have some kind of commitment to the network that includes the
        *  ability to vote and make transactions.
        */
-      asset             account_creation_fee =
-         asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL );
+      asset             account_creation_fee = asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL );
 
       /**
        *  This witnesses vote for the maximum_block_size which is used by the network
        *  to tune rate limiting and capacity
        */
       uint32_t          maximum_block_size = STEEMIT_MIN_BLOCK_SIZE_LIMIT * 2;
-      uint16_t          sbd_interest_rate  = STEEMIT_DEFAULT_SBD_INTEREST_RATE;
 
       void validate()const
       {
          FC_ASSERT( account_creation_fee.amount >= STEEMIT_MIN_ACCOUNT_CREATION_FEE);
          FC_ASSERT( maximum_block_size >= STEEMIT_MIN_BLOCK_SIZE_LIMIT);
-         FC_ASSERT( sbd_interest_rate >= 0 );
-         FC_ASSERT( sbd_interest_rate <= STEEMIT_100_PERCENT );
       }
    };
 
@@ -505,131 +496,6 @@ namespace steemit { namespace protocol {
    };
 
 
-   /**
-    *  Feeds can only be published by the top N witnesses which are included in every round and are
-    *  used to define the exchange rate between steem and the dollar.
-    */
-   struct feed_publish_operation : public base_operation
-   {
-      account_name_type publisher;
-      price             exchange_rate;
-
-      void  validate()const;
-      void  get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(publisher); }
-   };
-
-
-   /**
-    *  This operation instructs the blockchain to start a conversion between STEEM and SBD,
-    *  The funds are deposited after STEEMIT_CONVERSION_DELAY
-    */
-   struct convert_operation : public base_operation
-   {
-      account_name_type owner;
-      uint32_t          requestid = 0;
-      asset             amount;
-
-      void  validate()const;
-      void  get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
-   };
-
-
-   /**
-    * This operation creates a limit order and matches it against existing open orders.
-    */
-   struct limit_order_create_operation : public base_operation
-   {
-      account_name_type owner;
-      uint32_t          orderid = 0; /// an ID assigned by owner, must be unique
-      asset             amount_to_sell;
-      asset             min_to_receive;
-      bool              fill_or_kill = false;
-      time_point_sec    expiration = time_point_sec::maximum();
-
-      void  validate()const;
-      void  get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
-
-      price             get_price()const { return amount_to_sell / min_to_receive; }
-
-      pair< asset_symbol_type, asset_symbol_type > get_market()const
-      {
-         return amount_to_sell.symbol < min_to_receive.symbol ?
-                std::make_pair(amount_to_sell.symbol, min_to_receive.symbol) :
-                std::make_pair(min_to_receive.symbol, amount_to_sell.symbol);
-      }
-   };
-
-
-   /**
-    *  This operation is identical to limit_order_create except it serializes the price rather
-    *  than calculating it from other fields.
-    */
-   struct limit_order_create2_operation : public base_operation
-   {
-      account_name_type owner;
-      uint32_t          orderid = 0; /// an ID assigned by owner, must be unique
-      asset             amount_to_sell;
-      bool              fill_or_kill = false;
-      price             exchange_rate;
-      time_point_sec    expiration = time_point_sec::maximum();
-
-      void  validate()const;
-      void  get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
-
-      price             get_price()const { return exchange_rate; }
-
-      pair< asset_symbol_type, asset_symbol_type > get_market()const
-      {
-         return exchange_rate.base.symbol < exchange_rate.quote.symbol ?
-                std::make_pair(exchange_rate.base.symbol, exchange_rate.quote.symbol) :
-                std::make_pair(exchange_rate.quote.symbol, exchange_rate.base.symbol);
-      }
-   };
-
-
-   /**
-    *  Cancels an order and returns the balance to owner.
-    */
-   struct limit_order_cancel_operation : public base_operation
-   {
-      account_name_type owner;
-      uint32_t          orderid = 0;
-
-      void  validate()const;
-      void  get_required_active_authorities( flat_set<account_name_type>& a )const{ a.insert(owner); }
-   };
-
-
-   struct pow
-   {
-      public_key_type worker;
-      digest_type     input;
-      signature_type  signature;
-      digest_type     work;
-
-      void create( const fc::ecc::private_key& w, const digest_type& i );
-      void validate()const;
-   };
-
-
-   struct pow_operation : public base_operation
-   {
-      account_name_type worker_account;
-      block_id_type     block_id;
-      uint64_t          nonce = 0;
-      pow               work;
-      chain_properties  props;
-
-      void validate()const;
-      fc::sha256 work_input()const;
-
-      const account_name_type& get_worker_account()const { return worker_account; }
-
-      /** there is no need to verify authority, the proof of work is sufficient */
-      void get_required_active_authorities( flat_set<account_name_type>& a )const{  }
-   };
-
-
    struct pow2_input
    {
       account_name_type worker_account;
@@ -645,38 +511,6 @@ namespace steemit { namespace protocol {
 
       void create( const block_id_type& prev_block, const account_name_type& account_name, uint64_t nonce );
       void validate()const;
-   };
-
-   struct equihash_pow
-   {
-      pow2_input           input;
-      fc::equihash::proof  proof;
-      block_id_type        prev_block;
-      uint32_t             pow_summary = 0;
-
-      void create( const block_id_type& recent_block, const account_name_type& account_name, uint32_t nonce );
-      void validate() const;
-   };
-
-   typedef fc::static_variant< pow2, equihash_pow > pow2_work;
-
-   struct pow2_operation : public base_operation
-   {
-      pow2_work                     work;
-      optional< public_key_type >   new_owner_key;
-      chain_properties              props;
-
-      void validate()const;
-
-      void get_required_active_authorities( flat_set<account_name_type>& a )const;
-
-      void get_required_authorities( vector< authority >& a )const
-      {
-         if( new_owner_key )
-         {
-            a.push_back( authority( 1, *new_owner_key, 1 ) );
-         }
-      }
    };
 
 
@@ -803,43 +637,6 @@ namespace steemit { namespace protocol {
       void validate() const;
    };
 
-
-   /**
-    *  This operation allows recovery_accoutn to change account_to_reset's owner authority to
-    *  new_owner_authority after 60 days of inactivity.
-    */
-   struct reset_account_operation : public base_operation {
-      account_name_type reset_account;
-      account_name_type account_to_reset;
-      authority         new_owner_authority;
-
-      void get_required_active_authorities( flat_set<account_name_type>& a )const { a.insert( reset_account ); }
-      void validate()const;
-   };
-
-   /**
-    * This operation allows 'account' owner to control which account has the power
-    * to execute the 'reset_account_operation' after 60 days.
-    */
-   struct set_reset_account_operation : public base_operation {
-      account_name_type account;
-      account_name_type current_reset_account;
-      account_name_type reset_account;
-      void validate()const;
-      void get_required_owner_authorities( flat_set<account_name_type>& a )const
-      {
-         if( current_reset_account.size() )
-            a.insert( account );
-      }
-
-      void get_required_posting_authorities( flat_set<account_name_type>& a )const
-      {
-         if( !current_reset_account.size() )
-            a.insert( account );
-      }
-   };
-
-
    /**
     * Each account lists another account as their recovery account.
     * The recovery account has the ability to create account_recovery_requests
@@ -914,7 +711,6 @@ namespace steemit { namespace protocol {
    {
       account_name_type account;
       asset             reward_steem;
-      asset             reward_sbd;
       asset             reward_vests;
 
       void get_required_posting_authorities( flat_set< account_name_type >& a )const{ a.insert( account ); }
@@ -945,24 +741,10 @@ namespace steemit { namespace protocol {
 FC_REFLECT( steemit::protocol::transfer_to_savings_operation, (from)(to)(amount)(memo) )
 FC_REFLECT( steemit::protocol::transfer_from_savings_operation, (from)(request_id)(to)(amount)(memo) )
 FC_REFLECT( steemit::protocol::cancel_transfer_from_savings_operation, (from)(request_id) )
-
-FC_REFLECT( steemit::protocol::reset_account_operation, (reset_account)(account_to_reset)(new_owner_authority) )
-FC_REFLECT( steemit::protocol::set_reset_account_operation, (account)(current_reset_account)(reset_account) )
-
-
 FC_REFLECT( steemit::protocol::report_over_production_operation, (reporter)(first_block)(second_block) )
-FC_REFLECT( steemit::protocol::convert_operation, (owner)(requestid)(amount) )
-FC_REFLECT( steemit::protocol::feed_publish_operation, (publisher)(exchange_rate) )
-FC_REFLECT( steemit::protocol::pow, (worker)(input)(signature)(work) )
 FC_REFLECT( steemit::protocol::pow2, (input)(pow_summary) )
 FC_REFLECT( steemit::protocol::pow2_input, (worker_account)(prev_block)(nonce) )
-FC_REFLECT( steemit::protocol::equihash_pow, (input)(proof)(prev_block)(pow_summary) )
-FC_REFLECT( steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size)(sbd_interest_rate) );
-
-FC_REFLECT_TYPENAME( steemit::protocol::pow2_work )
-FC_REFLECT( steemit::protocol::pow_operation, (worker_account)(block_id)(nonce)(work)(props) )
-FC_REFLECT( steemit::protocol::pow2_operation, (work)(new_owner_key)(props) )
-
+FC_REFLECT( steemit::protocol::chain_properties, (account_creation_fee)(maximum_block_size));
 FC_REFLECT( steemit::protocol::account_create_operation,
             (fee)
             (creator)
@@ -1005,26 +787,23 @@ FC_REFLECT( steemit::protocol::vote_operation, (voter)(author)(permlink)(weight)
 FC_REFLECT( steemit::protocol::custom_operation, (required_auths)(id)(data) )
 FC_REFLECT( steemit::protocol::custom_json_operation, (required_auths)(required_posting_auths)(id)(json) )
 FC_REFLECT( steemit::protocol::custom_binary_operation, (required_owner_auths)(required_active_auths)(required_posting_auths)(required_auths)(id)(data) )
-FC_REFLECT( steemit::protocol::limit_order_create_operation, (owner)(orderid)(amount_to_sell)(min_to_receive)(fill_or_kill)(expiration) )
-FC_REFLECT( steemit::protocol::limit_order_create2_operation, (owner)(orderid)(amount_to_sell)(exchange_rate)(fill_or_kill)(expiration) )
-FC_REFLECT( steemit::protocol::limit_order_cancel_operation, (owner)(orderid) )
 
 FC_REFLECT( steemit::protocol::delete_comment_operation, (author)(permlink) );
 
 FC_REFLECT( steemit::protocol::beneficiary_route_type, (account)(weight) )
 FC_REFLECT( steemit::protocol::comment_payout_beneficiaries, (beneficiaries) )
 FC_REFLECT_TYPENAME( steemit::protocol::comment_options_extension )
-FC_REFLECT( steemit::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(percent_steem_dollars)(allow_votes)(allow_curation_rewards)(extensions) )
+FC_REFLECT( steemit::protocol::comment_options_operation, (author)(permlink)(max_accepted_payout)(allow_votes)(allow_curation_rewards)(extensions) )
 
-FC_REFLECT( steemit::protocol::escrow_transfer_operation, (from)(to)(sbd_amount)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) );
+FC_REFLECT( steemit::protocol::escrow_transfer_operation, (from)(to)(steem_amount)(escrow_id)(agent)(fee)(json_meta)(ratification_deadline)(escrow_expiration) );
 FC_REFLECT( steemit::protocol::escrow_approve_operation, (from)(to)(agent)(who)(escrow_id)(approve) );
 FC_REFLECT( steemit::protocol::escrow_dispute_operation, (from)(to)(agent)(who)(escrow_id) );
-FC_REFLECT( steemit::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(sbd_amount)(steem_amount) );
+FC_REFLECT( steemit::protocol::escrow_release_operation, (from)(to)(agent)(who)(receiver)(escrow_id)(steem_amount) );
 FC_REFLECT( steemit::protocol::challenge_authority_operation, (challenger)(challenged)(require_owner) );
 FC_REFLECT( steemit::protocol::prove_authority_operation, (challenged)(require_owner) );
 FC_REFLECT( steemit::protocol::request_account_recovery_operation, (recovery_account)(account_to_recover)(new_owner_authority)(extensions) );
 FC_REFLECT( steemit::protocol::recover_account_operation, (account_to_recover)(new_owner_authority)(recent_owner_authority)(extensions) );
 FC_REFLECT( steemit::protocol::change_recovery_account_operation, (account_to_recover)(new_recovery_account)(extensions) );
 FC_REFLECT( steemit::protocol::decline_voting_rights_operation, (account)(decline) );
-FC_REFLECT( steemit::protocol::claim_reward_balance_operation, (account)(reward_steem)(reward_sbd)(reward_vests) )
+FC_REFLECT( steemit::protocol::claim_reward_balance_operation, (account)(reward_steem)(reward_vests) )
 FC_REFLECT( steemit::protocol::delegate_vesting_shares_operation, (delegator)(delegatee)(vesting_shares) );

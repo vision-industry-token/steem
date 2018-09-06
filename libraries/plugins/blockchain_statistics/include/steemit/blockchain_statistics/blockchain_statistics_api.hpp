@@ -23,8 +23,6 @@ struct statistics
    uint32_t             transactions = 0;                            ///< Transactions processed
    uint32_t             transfers = 0;                               ///< Account to account transfers
    share_type           steem_transferred = 0;                       ///< STEEM transferred from account to account
-   share_type           sbd_transferred = 0;                         ///< SBD transferred from account to account
-   share_type           sbd_paid_as_interest = 0;                    ///< SBD paid as interest
    uint32_t             accounts_created = 0;                        ///< Total accounts created
    uint32_t             paid_accounts_created = 0;                   ///< Accounts created with fee
    uint32_t             mined_accounts_created = 0;                  ///< Accounts mined for free
@@ -47,10 +45,8 @@ struct statistics
    uint32_t             new_reply_votes = 0;                         ///< New votes on replies
    uint32_t             changed_reply_votes = 0;                     ///< Changed votes on replies
    uint32_t             payouts = 0;                                 ///< Number of comment payouts
-   share_type           sbd_paid_to_authors = 0;                     ///< Ammount of SBD paid to authors
    share_type           vests_paid_to_authors = 0;                   ///< Ammount of VESS paid to authors
    share_type           vests_paid_to_curators = 0;                  ///< Ammount of VESTS paid to curators
-   share_type           liquidity_rewards_paid = 0;                  ///< Ammount of STEEM paid to market makers
    uint32_t             transfers_to_vesting = 0;                    ///< Transfers of STEEM into VESTS
    share_type           steem_vested = 0;                            ///< Ammount of STEEM vested
    uint32_t             new_vesting_withdrawal_requests = 0;         ///< New vesting withdrawal requests
@@ -60,15 +56,6 @@ struct statistics
    uint32_t             finished_vesting_withdrawals = 0;            ///< Processed vesting withdrawals that are now finished
    share_type           vests_withdrawn = 0;                         ///< Ammount of VESTS withdrawn to STEEM
    share_type           vests_transferred = 0;                       ///< Ammount of VESTS transferred to another account
-   uint32_t             sbd_conversion_requests_created = 0;         ///< SBD conversion requests created
-   share_type           sbd_to_be_converted = 0;                     ///< Amount of SBD to be converted
-   uint32_t             sbd_conversion_requests_filled = 0;          ///< SBD conversion requests filled
-   share_type           steem_converted = 0;                         ///< Amount of STEEM that was converted
-   uint32_t             limit_orders_created = 0;                    ///< Limit orders created
-   uint32_t             limit_orders_filled = 0;                     ///< Limit orders filled
-   uint32_t             limit_orders_cancelled = 0;                  ///< Limit orders cancelled
-   uint32_t             total_pow = 0;                               ///< POW submitted
-   uint128_t            estimated_hashpower = 0;                     ///< Estimated average hashpower over interval
 
    statistics& operator += ( const bucket_object& b );
 };
@@ -114,8 +101,6 @@ FC_REFLECT( steemit::blockchain_statistics::statistics,
    (transactions)
    (transfers)
    (steem_transferred)
-   (sbd_transferred)
-   (sbd_paid_as_interest)
    (accounts_created)
    (paid_accounts_created)
    (mined_accounts_created)
@@ -138,10 +123,8 @@ FC_REFLECT( steemit::blockchain_statistics::statistics,
    (new_reply_votes)
    (changed_reply_votes)
    (payouts)
-   (sbd_paid_to_authors)
    (vests_paid_to_authors)
    (vests_paid_to_curators)
-   (liquidity_rewards_paid)
    (transfers_to_vesting)
    (steem_vested)
    (new_vesting_withdrawal_requests)
@@ -151,16 +134,7 @@ FC_REFLECT( steemit::blockchain_statistics::statistics,
    (finished_vesting_withdrawals)
    (vests_withdrawn)
    (vests_transferred)
-   (sbd_conversion_requests_created)
-   (sbd_to_be_converted)
-   (sbd_conversion_requests_filled)
-   (steem_converted)
-   (limit_orders_created)
-   (limit_orders_filled)
-   (limit_orders_cancelled)
-   (total_pow)
-   (estimated_hashpower) )
-
+)
 
 FC_API( steemit::blockchain_statistics::blockchain_statistics_api,
    (get_stats_for_time)
