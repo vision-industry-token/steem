@@ -91,32 +91,35 @@ FROM Base as Builder
 RUN \
     cd /usr/local/src/steem && \
     git submodule update --init --recursive
-# RUN \
-#     mkdir build && \
-#     cd build && \
-#     cmake \
-#         -DCMAKE_INSTALL_PREFIX=/usr/local/steemd-default \
-#         -DCMAKE_BUILD_TYPE=Release \
-#         -DLOW_MEMORY_NODE=ON \
-#         -DCLEAR_VOTES=ON \
-#         -DSKIP_BY_TX_ID=OFF \
-#         -DBUILD_STEEM_TESTNET=OFF \
-#         -DSTEEM_STATIC_BUILD=${STEEM_STATIC_BUILD} \
-#         .. \
-#     && \
-#     make -j$(nproc) && \
-#     make install && \
-#     cd .. && \
-#     ( /usr/local/steemd-default/bin/steemd --version \
-#       | grep -o '[0-9]*\.[0-9]*\.[0-9]*' \
-#       && echo '_' \
-#       && git rev-parse --short HEAD ) \
-#       | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' \
-#       > /etc/steemdversion && \
-#     cat /etc/steemdversion && \
-#     rm -rfv build
 RUN \
     cd /usr/local/src/steem && \
+    rm -rfv build && \
+    mkdir build && \
+    cd build && \
+    cmake \
+        -DCMAKE_INSTALL_PREFIX=/usr/local/steemd-default \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DLOW_MEMORY_NODE=ON \
+        -DCLEAR_VOTES=ON \
+        -DSKIP_BY_TX_ID=OFF \
+        -DBUILD_STEEM_TESTNET=OFF \
+        -DSTEEM_STATIC_BUILD=${STEEM_STATIC_BUILD} \
+        .. \
+    && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && \
+    ( /usr/local/steemd-default/bin/steemd --version \
+      | grep -o '[0-9]*\.[0-9]*\.[0-9]*' \
+      && echo '_' \
+      && git rev-parse --short HEAD ) \
+      | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n//g' \
+      > /etc/steemdversion && \
+    cat /etc/steemdversion && \
+    rm -rfv build
+RUN \
+    cd /usr/local/src/steem && \
+    rm -rfv build && \
     mkdir build && \
     cd build && \
     cmake \
@@ -137,7 +140,7 @@ RUN \
 
 FROM phusion/baseimage:0.9.19 as Final
 
-# COPY --from=Builder /usr/local/steemd-default /usr/local/steemd-default
+COPY --from=Builder /usr/local/steemd-default /usr/local/steemd-default
 COPY --from=Builder /usr/local/steemd-full /usr/local/steemd-full
 
 RUN useradd -s /bin/bash -m -d /var/lib/steemd steemd
