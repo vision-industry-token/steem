@@ -1531,9 +1531,14 @@ void database::process_comment_cashout()
       // Add all reward funds to the local cache and decay their recent rshares
       modify( *itr, [&]( reward_fund_object& rfo )
       {
-         fc::microseconds decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF19;
-         rfo.recent_claims -= ( rfo.recent_claims * ( head_block_time() - rfo.last_update ).to_seconds() ) / decay_rate.to_seconds();
-         rfo.last_update = head_block_time();
+          fc::microseconds decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF19;
+
+          int64_t delta_seconds = ( head_block_time() - rfo.last_update ).to_seconds();
+          if (delta_seconds < decay_rate.to_seconds()) {
+             rfo.recent_claims -=  ( rfo.recent_claims * delta_seconds ) / decay_rate.to_seconds();
+          }
+
+          rfo.last_update = head_block_time();
       });
 
       reward_fund_context rf_ctx;
@@ -1612,9 +1617,10 @@ void database::process_funds()
 {
    const auto& props = get_dynamic_global_properties();
    const auto& wso = get_witness_schedule_object();
+   uint32_t block_num = head_block_num();
 
    int64_t start_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_START_PERCENT );
-   int64_t inflation_rate_adjustment = int64_t( head_block_num() / STEEMIT_INFLATION_NARROWING_PERIOD );
+   int64_t inflation_rate_adjustment = int64_t( block_num / STEEMIT_INFLATION_NARROWING_PERIOD );
    int64_t inflation_rate_floor = int64_t( STEEMIT_INFLATION_RATE_STOP_PERCENT );
 
    // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
@@ -1624,6 +1630,9 @@ void database::process_funds()
    auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
    content_reward = pay_reward_funds( content_reward ); /// 72.75% to content creator
    auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+   if (block_num < STEEMIT_START_VESTING_BLOCK) {
+      vesting_reward = 0;
+   }
    auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
    const auto& cwit = get_witness( props.current_witness );
