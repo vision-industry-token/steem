@@ -67,7 +67,7 @@
 
 #define STEEMIT_INIT_MINER_NAME                 "vicewitness"
 
-#define STEEMIT_HF_19_RECENT_CLAIMS (fc::uint128_t(uint64_t(140797515942543623ull)))
+#define STEEMIT_HF_19_RECENT_CLAIMS (fc::uint128_t(uint64_t(4000000000000ull)))
 
 #endif
 
