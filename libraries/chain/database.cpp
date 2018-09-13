@@ -1617,9 +1617,10 @@ void database::process_funds()
 {
    const auto& props = get_dynamic_global_properties();
    const auto& wso = get_witness_schedule_object();
+   uint32_t block_num = head_block_num();
 
    int64_t start_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_START_PERCENT );
-   int64_t inflation_rate_adjustment = int64_t( head_block_num() / STEEMIT_INFLATION_NARROWING_PERIOD );
+   int64_t inflation_rate_adjustment = int64_t( block_num / STEEMIT_INFLATION_NARROWING_PERIOD );
    int64_t inflation_rate_floor = int64_t( STEEMIT_INFLATION_RATE_STOP_PERCENT );
 
    // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
