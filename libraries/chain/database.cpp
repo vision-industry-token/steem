@@ -1629,6 +1629,9 @@ void database::process_funds()
    auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
    content_reward = pay_reward_funds( content_reward ); /// 72.75% to content creator
    auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+   if (block_num < STEEMIT_START_VESTING_BLOCK) {
+      vesting_reward = 0;
+   }
    auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
    const auto& cwit = get_witness( props.current_witness );
